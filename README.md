@@ -32,9 +32,9 @@ Differences from Formik:
   you provide through excessive nesting.
 - Updates are pushed in their entirety to the parent component on every change
   or blur. A `FormBag` in every keypress!
-- Validation happens once, once only, and for everything. There's no schema
-  (unless you want to integrate one yourself), no presumption of any schema,
-  you write some simple imperative code and that's it.
+- Validation happens in one place and one place only, for everything. There's
+  no schema (unless you want to integrate one yourself), no presumption of any
+  schema, you write some simple imperative code and that's it.
 - No HOCs (please god, no HOCs)
 
 
