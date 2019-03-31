@@ -135,17 +135,11 @@ export type FieldErrorComponentProps<TValues=any> = React.PropsWithChildren<{
   readonly message: string;
 }>;
 
-type FieldErrorProps<TValues=any> = {
+type FieldErrorProps<TValues=any> = Styleable & {
   readonly name: keyof TValues;
 
   /** Optional component to use instead of a <div> */
   readonly component?: React.ComponentType<FieldErrorComponentProps<TValues>>;
-
-  /** 'className' is ignored if 'component' is used */
-  readonly className?: string;
-
-  /** 'style' is ignored if 'component' is used */
-  readonly style?: React.CSSProperties;
 };
 
 export class FieldError<TValues=object> extends React.Component<FieldErrorProps<TValues>> {
@@ -169,7 +163,15 @@ export class FieldError<TValues=object> extends React.Component<FieldErrorProps<
   }
 }
 
-type FieldProps<TValues=any> = {
+type Styleable = {
+  /** 'className' is ignored if 'component' is used */
+  readonly className?: string;
+
+  /** 'style' is ignored if 'component' is used */
+  readonly style?: React.CSSProperties;
+};
+
+type FieldProps<TValues=any> = Styleable & {
   readonly name: keyof TValues;
 
   /**

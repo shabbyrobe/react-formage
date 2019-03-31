@@ -45,21 +45,23 @@ export declare type FieldErrorComponentProps<TValues = any> = React.PropsWithChi
     readonly touched: boolean;
     readonly message: string;
 }>;
-declare type FieldErrorProps<TValues = any> = {
+declare type FieldErrorProps<TValues = any> = Styleable & {
     readonly name: keyof TValues;
     /** Optional component to use instead of a <div> */
     readonly component?: React.ComponentType<FieldErrorComponentProps<TValues>>;
-    /** 'className' is ignored if 'component' is used */
-    readonly className?: string;
-    /** 'style' is ignored if 'component' is used */
-    readonly style?: React.CSSProperties;
 };
 export declare class FieldError<TValues = object> extends React.Component<FieldErrorProps<TValues>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
     render(): JSX.Element | null;
 }
-declare type FieldProps<TValues = any> = {
+declare type Styleable = {
+    /** 'className' is ignored if 'component' is used */
+    readonly className?: string;
+    /** 'style' is ignored if 'component' is used */
+    readonly style?: React.CSSProperties;
+};
+declare type FieldProps<TValues = any> = Styleable & {
     readonly name: keyof TValues;
     /**
      * If component is set to 'input', 'type' is used for the input type, i.e.
@@ -86,12 +88,16 @@ export declare class Field<TValues = object> extends React.Component<FieldProps<
         onChange: (e: any) => void;
         onBlur: (e: any) => void;
         children: React.ReactNode;
+        className?: string | undefined;
+        style?: React.CSSProperties | undefined;
         type?: string | undefined;
     }, React.Component<{
         value: TValues[keyof TValues];
         onChange: (e: any) => void;
         onBlur: (e: any) => void;
         children: React.ReactNode;
+        className?: string | undefined;
+        style?: React.CSSProperties | undefined;
         type?: string | undefined;
     }, any, any>> | React.DetailedReactHTMLElement<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
 }
