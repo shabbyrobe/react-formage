@@ -28,7 +28,6 @@ export class BasicExample extends React.Component<Props, State> {
   }
 
   private onFormUpdate = (e: FormUpdateEvent<Values>) => {
-    console.log(e.bag.valid);
     this.setState({ bag: e.bag });
   };
 
