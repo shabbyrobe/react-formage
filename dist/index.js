@@ -131,13 +131,14 @@ export class Field extends React.Component {
             return React.createElement(component, Object.assign({}, props, extra, { value: this.context.bag.values[name], onChange: this.onChange, onBlur: this.onBlur, children }));
         }
         else {
-            return React.createElement(component, {
+            const componentProps = {
                 value: this.context.bag.values[name],
                 change: (value) => this.context.handleChange(this.props.name, value),
                 blur: () => this.context.handleBlur(this.props.name),
                 setFieldValue: this.context.setFieldValue,
                 children,
-            });
+            };
+            return React.createElement(component, componentProps);
         }
     }
 }

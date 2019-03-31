@@ -41,13 +41,14 @@ export declare class Form<TValues extends object> extends React.Component<FormPr
     private handleBlur;
     render(): JSX.Element;
 }
+export declare type FieldErrorComponentProps<TValues = any> = React.PropsWithChildren<{
+    readonly touched: boolean;
+    readonly message: string;
+}>;
 declare type FieldErrorProps<TValues = any> = {
     readonly name: keyof TValues;
     /** Optional component to use instead of a <div> */
-    readonly component?: React.ComponentType<{
-        touched: boolean;
-        message: string;
-    }>;
+    readonly component?: React.ComponentType<FieldErrorComponentProps<TValues>>;
     /** 'className' is ignored if 'component' is used */
     readonly className?: string;
     /** 'style' is ignored if 'component' is used */
@@ -65,8 +66,14 @@ declare type FieldProps<TValues = any> = {
      * 'checkbox', 'radio', etc.
      */
     readonly type?: 'text' | 'number' | 'radio' | 'checkbox' | string;
-    readonly component?: 'input' | 'textarea' | 'select' | React.ComponentType<TValues> | React.ComponentType<void>;
+    readonly component?: 'input' | 'textarea' | 'select' | React.ComponentType<FieldComponentProps<TValues>>;
 };
+export declare type FieldComponentProps<TValues = any, TValue = any> = React.PropsWithChildren<{
+    readonly value: TValue;
+    readonly change: (value: TValue) => void;
+    readonly blur: () => void;
+    readonly setFieldValue: (name: keyof TValues, value: TValue, shouldValidate: boolean) => FormBag<TValues>;
+}>;
 export declare class Field<TValues = object> extends React.Component<FieldProps<TValues>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
@@ -86,18 +93,6 @@ export declare class Field<TValues = object> extends React.Component<FieldProps<
         onBlur: (e: any) => void;
         children: React.ReactNode;
         type?: string | undefined;
-    }, any, any>> | React.ComponentElement<{
-        value: TValues[keyof TValues];
-        change: (value: any) => void;
-        blur: () => void;
-        setFieldValue: (name: keyof TValues, value: any, shouldValidate: boolean) => FormBag<TValues>;
-        children: React.ReactNode;
-    }, React.Component<{
-        value: TValues[keyof TValues];
-        change: (value: any) => void;
-        blur: () => void;
-        setFieldValue: (name: keyof TValues, value: any, shouldValidate: boolean) => FormBag<TValues>;
-        children: React.ReactNode;
-    }, any, any>>;
+    }, any, any>> | React.DetailedReactHTMLElement<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
 }
 export {};

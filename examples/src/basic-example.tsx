@@ -91,7 +91,7 @@ export class BasicExample extends React.Component<Props, State> {
 
         <div>
           <label>Pants</label>
-          <Field<Values> name="pants" component={(props: any) => {
+          <Field<Values> name="pants" component={(props) => {
             return (
               <Select 
                 options={pantsSelectOptions}

@@ -130,11 +130,16 @@ export class Form<TValues extends object> extends React.Component<FormProps<TVal
   }
 }
 
+export type FieldErrorComponentProps<TValues=any> = React.PropsWithChildren<{
+  readonly touched: boolean;
+  readonly message: string;
+}>;
+
 type FieldErrorProps<TValues=any> = {
   readonly name: keyof TValues;
 
   /** Optional component to use instead of a <div> */
-  readonly component?: React.ComponentType<{ touched: boolean, message: string }>;
+  readonly component?: React.ComponentType<FieldErrorComponentProps<TValues>>;
 
   /** 'className' is ignored if 'component' is used */
   readonly className?: string;
@@ -164,7 +169,6 @@ export class FieldError<TValues=object> extends React.Component<FieldErrorProps<
   }
 }
 
-
 type FieldProps<TValues=any> = {
   readonly name: keyof TValues;
 
@@ -175,9 +179,15 @@ type FieldProps<TValues=any> = {
   readonly type?: 'text' | 'number' | 'radio' | 'checkbox' | string;
 
   readonly component?: 'input' | 'textarea' | 'select'
-    | React.ComponentType<TValues>
-    | React.ComponentType<void>;
+    | React.ComponentType<FieldComponentProps<TValues>>;
 };
+
+export type FieldComponentProps<TValues=any, TValue=any> = React.PropsWithChildren<{
+  readonly value: TValue;
+  readonly change: (value: TValue) => void;
+  readonly blur: () => void;
+  readonly setFieldValue: (name: keyof TValues, value: TValue, shouldValidate: boolean) => FormBag<TValues>;
+}>;
 
 export class Field<TValues=object> extends React.Component<FieldProps<TValues>> {
   public static contextType: React.Context<FormContextDef> = FormContext;
@@ -225,13 +235,14 @@ export class Field<TValues=object> extends React.Component<FieldProps<TValues>> 
       });
 
     } else {
-      return React.createElement(component as any, {
+      const componentProps: FieldComponentProps<TValues> = {
         value: this.context.bag.values[name],
         change: (value: any) => this.context.handleChange(this.props.name, value),
         blur: () => this.context.handleBlur(this.props.name),
         setFieldValue: this.context.setFieldValue,
         children,
-      });
+      };
+      return React.createElement(component as any, componentProps);
     }
   }
 }
