@@ -1,0 +1,29 @@
+{
+  "name": "react-formage-examples",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "localdemo": "npm run build && http-server .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Blake Williams <code@shabbyrobe.org>",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-select": "2.4.2",
+    "react-formage": "../"
+  },
+  "devDependencies": {
+    "@types/react": "^16.8.10",
+    "@types/react-dom": "^16.8.3",
+    "@types/react-select": "*",
+    "http-server": "^0.11.1",
+    "source-map-loader": "^0.2.4",
+    "terser": "^3.17.0",
+    "ts-loader": "^5.3.3",
+    "typescript": "^3.4.1"
+  }
+}

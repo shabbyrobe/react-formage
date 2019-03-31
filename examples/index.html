@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Hello React!</title>
+  <style type="text/css">
+  .error {
+    color: #f00;
+  }
+  input {
+    display: block;
+    border-radius: 2px;
+    border: solid 1px #ccc;
+    padding: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  label {
+    font-size: 13px;
+    display: block;
+    margin: 16px 0px;
+  }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <!-- Dependencies -->
+  <script src="./node_modules/react/umd/react.development.js"></script>
+  <script src="./node_modules/react-dom/umd/react-dom.development.js"></script>
+
+  <!-- Main -->
+  <script src="./dist/bundle.js"></script>
+</body>
+</html>
