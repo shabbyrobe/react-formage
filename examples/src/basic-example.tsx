@@ -8,22 +8,30 @@ type Props = {};
 type Values = {
   readonly foo: string;
   readonly bar: string;
-  readonly baz: string;
-  readonly qux: boolean;
-  readonly pants: string;
+  readonly textarea: string;
+  readonly check: boolean;
+  readonly reactSelect: string;
+  readonly normalSelect: string;
 };
 
 type State = {
   readonly bag: FormBag<Values>;
 };
 
-const pantsSelectOptions = ['a', 'b', 'c'].map((v) => ({ value: v, label: v }));
+const reactSelectOptions = ['a', 'b', 'c'].map((v) => ({ value: v, label: v }));
 
 export class BasicExample extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      bag: createFormBag({ foo: 'yeps', bar: 'yeppo', baz: 'yeppers', qux: false, pants: 'pants' }),
+      bag: createFormBag({
+        foo: 'yeps',
+        bar: 'yeppo',
+        textarea: 'yeppers',
+        check: false,
+        reactSelect: 'pants',
+        normalSelect: 'one',
+      }),
     };
   }
 
@@ -42,7 +50,7 @@ export class BasicExample extends React.Component<Props, State> {
   private validate = (values: Values): FormErrors<Values> => {
     const errors: FormErrors<Values> = {};
 
-    const required: Array<keyof Values> = ['bar', 'baz', 'pants'];
+    const required: Array<keyof Values> = ['bar', 'textarea', 'reactSelect'];
     for (const key of required) {
       if (!values[key]) {
         errors[key] = 'Value is required';
@@ -52,8 +60,8 @@ export class BasicExample extends React.Component<Props, State> {
     if (values.foo !== 'yep') {
       errors.foo = 'Foo must be "yep"';
     }
-    if (!pantsSelectOptions.find((v) => v.value === values.pants)) {
-      errors.pants = 'Invalid value';
+    if (!reactSelectOptions.find((v) => v.value === values.reactSelect)) {
+      errors.reactSelect = 'Invalid value';
     }
     return errors;
   };
@@ -63,7 +71,7 @@ export class BasicExample extends React.Component<Props, State> {
 
     return (
       <Form bag={this.state.bag} onUpdate={this.onFormUpdate} validate={this.validate}>
-        <h1>Silly Form Example</h1>
+        <h1>Form Example</h1>
 
         <div>
           <label>Foo</label>
@@ -78,30 +86,40 @@ export class BasicExample extends React.Component<Props, State> {
         </div>
 
         <div>
-          <label>Baz</label>
-          <Field<Values> name="baz" />
-          <div className="error">{touched.baz && errors.baz}</div>
+          <label>Textarea</label>
+          <Field<Values> component="textarea" name="textarea" />
+          <div className="error">{touched.textarea && errors.textarea}</div>
         </div>
 
         <div>
-          <label>Qux</label>
-          <Field<Values> type="checkbox" name="qux" />
-          <div className="error">{touched.qux && errors.qux}</div>
+          <label>Check</label>
+          <Field<Values> type="checkbox" name="check" />
+          <div className="error">{touched.check && errors.check}</div>
         </div>
 
         <div>
-          <label>Pants</label>
-          <Field<Values> name="pants" component={(props) => {
+          <label>React Select</label>
+          <Field<Values> name="reactSelect" component={(props) => {
             return (
               <Select 
-                options={pantsSelectOptions}
+                options={reactSelectOptions}
                 value={{ label: props.value, value: props.value }}
                 onChange={(e) => props.change((e as any).value)}
                 onBlur={() => props.blur()}
               />
             );
           }}/>
-          <div className="error">{touched.pants && errors.pants}</div>
+          <div className="error">{touched.reactSelect && errors.reactSelect}</div>
+        </div>
+
+        <div>
+          <label>Normal Select</label>
+          <Field<Values> component="select" name="normalSelect">
+            <option>one</option>
+            <option>two</option>
+            <option>three</option>
+          </Field>
+          <FieldError<Values> name="normalSelect" className="error" />
         </div>
 
         <div>
