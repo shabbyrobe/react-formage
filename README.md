@@ -6,7 +6,7 @@ this aims to distil the bits I was actually using in such a way as to grant the
 parent component 100% control over all meaningful state.
 
 This is a very early draft, but it's sitting at around the size I'd prefer it
-to stay. The name, on the other hand... would quite like to change that.
+to stay.
 
 Similarities to Formik:
 
@@ -38,7 +38,29 @@ Differences from Formik:
 - No HOCs (please god, no HOCs)
 
 
-Simple TypeScript example:
+Performance
+-----------
+
+Performance seems fine with 100+ fields when you disable the React DevTools
+extension and use the production build of React, but it isn't great when you
+use the development build and leave React DevTools on with this many fields.
+
+On my old dual core 2015 MacBook Pro, I get 11ms render times with 500 fields
+on the page in production mode, but the form is completely unusable in
+development mode. YMMV.
+
+This library trades performance in these circumstances for brutal simplicity.
+I'm investigating ways to speed it up, but if those improvements don't fit in
+with the ultimate goal of retaining that simplicity, limitations on the number
+of fields will probably remain.
+
+
+Simple TypeScript example
+-------------------------
+
+More examples can be found in the `examples/` directory. They're a bit rubbish
+at the moment (and they aren't styled - I leave CSS to the professionals!) but
+they're serviceable. Run `npm run localdemo` to run them in a local web server.
 
 ```typescript
 import * as React from 'react';
