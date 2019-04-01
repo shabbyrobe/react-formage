@@ -83,22 +83,6 @@ export declare class Field<TValues = object> extends React.Component<FieldProps<
     private onChange;
     private onBlur;
     private extractValue;
-    render(): React.ComponentElement<{
-        value: TValues[keyof TValues];
-        onChange: (e: any) => void;
-        onBlur: (e: any) => void;
-        children: React.ReactNode;
-        className?: string | undefined;
-        style?: React.CSSProperties | undefined;
-        type?: string | undefined;
-    }, React.Component<{
-        value: TValues[keyof TValues];
-        onChange: (e: any) => void;
-        onBlur: (e: any) => void;
-        children: React.ReactNode;
-        className?: string | undefined;
-        style?: React.CSSProperties | undefined;
-        type?: string | undefined;
-    }, any, any>> | React.DetailedReactHTMLElement<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
+    render(): React.ReactNode;
 }
 export {};

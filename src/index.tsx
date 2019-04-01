@@ -37,7 +37,7 @@ export function validateFormBag<TValues>(bag: FormBag<TValues>, validator: FormV
   const valid = Object.keys(errors).length === 0;
 
   const touched = { ...bag.touched};
-  for (const key of Object.keys(bag.values)) {
+  for (const key of Object.keys(errors)) {
     touched[key as keyof TValues] = true;
   }
 
@@ -215,7 +215,7 @@ export class Field<TValues=object> extends React.Component<FieldProps<TValues>> 
     return target.value;
   }
 
-  public render() {
+  public render(): React.ReactNode {
     const { component, name, children, ...props } = this.props;
 
     let extra = {};
@@ -230,10 +230,13 @@ export class Field<TValues=object> extends React.Component<FieldProps<TValues>> 
       return React.createElement(component as any, {
         ...props,
         ...extra,
-        value: this.context.bag.values[name],
         onChange: this.onChange,
         onBlur: this.onBlur,
         children,
+
+        // Without the '', if the key does not exist, react warns about
+        // uncontrolled components:
+        value: this.context.bag.values[name] || '',
       });
 
     } else {

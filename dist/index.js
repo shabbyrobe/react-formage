@@ -22,7 +22,7 @@ export function validateFormBag(bag, validator) {
     const errors = validator(bag.values);
     const valid = Object.keys(errors).length === 0;
     const touched = Object.assign({}, bag.touched);
-    for (const key of Object.keys(bag.values)) {
+    for (const key of Object.keys(errors)) {
         touched[key] = true;
     }
     return {
@@ -128,7 +128,10 @@ export class Field extends React.Component {
             else if (props.type) {
                 extra = { type: props.type };
             }
-            return React.createElement(component, Object.assign({}, props, extra, { value: this.context.bag.values[name], onChange: this.onChange, onBlur: this.onBlur, children }));
+            return React.createElement(component, Object.assign({}, props, extra, { onChange: this.onChange, onBlur: this.onBlur, children, 
+                // Without the '', if the key does not exist, react warns about
+                // uncontrolled components:
+                value: this.context.bag.values[name] || '' }));
         }
         else {
             const componentProps = {
