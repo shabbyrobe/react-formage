@@ -32,7 +32,9 @@ export function validateFormBag(bag, validator) {
         values: bag.values,
     };
 }
-export class Form extends React.Component {
+// FormData provides a context to one or more Field components, validates the
+// field values and propagates updates to the parent component.
+export class FormData extends React.Component {
     constructor() {
         super(...arguments);
         this.handleChange = (name, value) => {
@@ -80,7 +82,7 @@ export class Form extends React.Component {
         return (React.createElement(FormContext.Provider, { value: ctx }, this.props.children));
     }
 }
-Form.defaultProps = {
+FormData.defaultProps = {
     validateOnChange: true,
     validateOnBlur: true,
 };

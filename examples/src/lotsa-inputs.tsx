@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Select from 'react-select';
 
-import { createFormBag, Field, FieldError, Form, FormBag, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
+import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
 
 type Props = {};
 
@@ -29,7 +29,8 @@ export class LotsaInputsExample extends React.Component<Props, State> {
     this.setState({ bag: e.bag });
   };
 
-  private onSubmit = () => {
+  private onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     const bag = validateFormBag(this.state.bag, this.validate);
     this.setState({ bag });
     if (bag.valid) {
@@ -52,36 +53,38 @@ export class LotsaInputsExample extends React.Component<Props, State> {
     const { errors, touched } = this.state.bag;
 
     return (
-      <Form bag={this.state.bag} onUpdate={this.onFormUpdate} validate={this.validate}>
-        <h1>Lotsa Inputs</h1>
+      <form noValidate onSubmit={this.onSubmit}>
+        <FormData bag={this.state.bag} onUpdate={this.onFormUpdate} validate={this.validate}>
+          <h1>Lotsa Inputs</h1>
 
-        <div>
-          <label>Inputs</label>
-          <input value={this.state.inputsText} onChange={(e) => {
-            const inputs = Number(e.currentTarget.value);
-            this.setState({
-              inputs: isNaN(inputs) ? this.state.inputs : inputs,
-              inputsText: e.currentTarget.value,
-            })
-          }} />
-        </div>
-        
-        {Array.from({length: this.state.inputs}, (x,i) => (
-          <div key={i}>
-            <label>{`field${i}`}</label>
-            <Field<Values> name={`field${i}`} />
-            <FieldError<Values> name={`field${i}`} className="error" />
+          <div>
+            <label>Inputs</label>
+            <input value={this.state.inputsText} onChange={(e) => {
+              const inputs = Number(e.currentTarget.value);
+              this.setState({
+                inputs: isNaN(inputs) ? this.state.inputs : inputs,
+                inputsText: e.currentTarget.value,
+              })
+            }} />
           </div>
-        ))}
+          
+          {Array.from({length: this.state.inputs}, (x,i) => (
+            <div key={i}>
+              <label>{`field${i}`}</label>
+              <Field<Values> name={`field${i}`} />
+              <FieldError<Values> name={`field${i}`} className="error" />
+            </div>
+          ))}
 
-        <button onClick={this.onSubmit}>Submit</button>
+          <button onClick={this.onSubmit}>Submit</button>
 
-        <div style={{ margin: '30px 0px' }}>
-          <textarea readOnly={true} style={{ width: '100%', height: '200px' }}
-            value={JSON.stringify(this.state.bag.values, undefined, 2)} />
-        </div>
+          <div style={{ margin: '30px 0px' }}>
+            <textarea readOnly={true} style={{ width: '100%', height: '200px' }}
+              value={JSON.stringify(this.state.bag.values, undefined, 2)} />
+          </div>
 
-      </Form>
+        </FormData>
+      </form>
     );
   }
 }

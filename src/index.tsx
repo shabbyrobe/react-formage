@@ -66,7 +66,9 @@ interface FormActions<TValues> {
   handleBlur: (name: keyof TValues) => void;
 }
 
-export class Form<TValues extends object> extends React.Component<FormProps<TValues>> {
+// FormData provides a context to one or more Field components, validates the
+// field values and propagates updates to the parent component.
+export class FormData<TValues extends object> extends React.Component<FormProps<TValues>> {
   public static defaultProps: Partial<FormProps<any>> = {
     validateOnChange: true,
     validateOnBlur: true,

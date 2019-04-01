@@ -21,12 +21,12 @@ Similarities to Formik:
 
 Differences from Formik:
 
-- No state retention - the parent of the `<Form>` component is completely
-  responsible for state management.
-- The parent of `<Form>` is completely responsible for submission.
+- No state retention inside `react-formage`- the parent of the `<FormData>`
+  component is completely responsible for state management.
+- The parent of `<FormData>` is also completely responsible for submission.
 - No support for nested value paths (like Lodash's `get` and `set`) - these
-  are antithetical to typing. Flatten your form fields in to `Values` even
-  if they are nested in your domain, or use multiple `<Form>` components, one
+  are antithetical to typing. Flatten your form fields in to `Values` even if
+  they are nested in your domain, or use multiple `<FormData>` components, one
   per hierarchy, and co-ordinate the state in your parent.
 - Less pseudo-typing. Formik leans on `any` too hard and strips the generics
   you provide through excessive nesting.
@@ -65,7 +65,7 @@ they're serviceable. Run `npm run localdemo` to run them in a local web server.
 ```typescript
 import * as React from 'react';
 
-import { createFormBag, Field, FieldError, Form, FormBag, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
+import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
 
 type Values = {
   readonly foo: string;
@@ -84,12 +84,14 @@ export class BasicExample extends React.Component<{}, State> {
     };
   }
 
-  private onSubmit = () => {
+  private onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
     // Ensure you validate on submit to touch all untouched fields, otherwise
     // their validation messages will not be shown:
     const bag = validateFormBag(this.state.bag, this.validate);
 
-    // If you don't save the bag, you won't see any new errors:
+    // If you don't save the validated bag, you won't see any new errors:
     this.setState({ bag });
 
     if (bag.valid) {
@@ -112,21 +114,23 @@ export class BasicExample extends React.Component<{}, State> {
     const { errors, touched } = this.state.bag;
 
     return (
-      <Form bag={this.state.bag} onUpdate={(e) => this.setState({ bag: e.bag })} validate={this.validate}>
-        <div>
-          <label>Foo</label>
-          <Field<Values> name="foo" />
-          <FieldError<Values> name="foo" className="error" />
-        </div>
-
-        <div>
-          <label>Bar</label>
-          <Field<Values> name="bar" />
-          <div className="error">{touched.bar && errors.bar}</div>
-        </div>
-
-        <button onClick={this.onSubmit}>Submit</button>
-      </Form>
+      <form noValidate onSubmit={this.onSubmit}>
+        <FormData bag={this.state.bag} onUpdate={(e) => this.setState({ bag: e.bag })} validate={this.validate}>
+          <div>
+            <label>Foo</label>
+            <Field<Values> name="foo" />
+            <FieldError<Values> name="foo" className="error" />
+          </div>
+  
+          <div>
+            <label>Bar</label>
+            <Field<Values> name="bar" />
+            <div className="error">{touched.bar && errors.bar}</div>
+          </div>
+  
+          <button onClick={this.onSubmit}>Submit</button>
+        </FormData>
+      </form>
     );
   }
 }

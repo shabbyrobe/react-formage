@@ -33,7 +33,7 @@ interface FormActions<TValues> {
     handleChange: (name: keyof TValues, value: any) => void;
     handleBlur: (name: keyof TValues) => void;
 }
-export declare class Form<TValues extends object> extends React.Component<FormProps<TValues>> {
+export declare class FormData<TValues extends object> extends React.Component<FormProps<TValues>> {
     static defaultProps: Partial<FormProps<any>>;
     private updateBag;
     private setFieldValue;
