@@ -13,6 +13,7 @@ const FormContext = React.createContext({
     handleChange: () => { },
     handleBlur: () => { },
     setFieldValue: () => { return createFormBag({}); },
+    setFieldTouched: () => { return createFormBag({}); },
 });
 const FormConsumer = FormContext.Consumer;
 export function createFormBag(values) {
@@ -66,18 +67,22 @@ export class FormData extends React.Component {
     }
     setFieldValue(name, value, shouldValidate) {
         const { bag } = this.props;
-        const { touched, values } = this.props.bag;
-        const newValues = Object.assign({}, values, { [name]: value });
-        const newTouched = Object.assign({}, touched, { [name]: true });
-        return this.updateBag(newValues, newTouched, shouldValidate);
+        const newValues = Object.assign({}, bag.values, { [name]: value });
+        return this.updateBag(newValues, bag.touched, shouldValidate);
+    }
+    setFieldTouched(name) {
+        const { bag } = this.props;
+        const newTouched = Object.assign({}, bag.touched, { [name]: true });
+        return this.updateBag(bag.values, newTouched, false);
     }
     render() {
-        const { handleBlur, handleChange, setFieldValue } = this;
+        const { handleBlur, handleChange, setFieldValue, setFieldTouched } = this;
         const ctx = {
             bag: this.props.bag,
             handleBlur,
             handleChange,
             setFieldValue,
+            setFieldTouched,
         };
         return (React.createElement(FormContext.Provider, { value: ctx }, this.props.children));
     }
@@ -141,6 +146,7 @@ export class Field extends React.Component {
                 change: (value) => this.context.handleChange(this.props.name, value),
                 blur: () => this.context.handleBlur(this.props.name),
                 setFieldValue: this.context.setFieldValue,
+                setFieldTouched: this.context.setFieldTouched,
                 children,
             };
             return React.createElement(component, componentProps);

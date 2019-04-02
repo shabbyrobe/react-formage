@@ -9,6 +9,7 @@ const FormContext = React.createContext<FormContextDef>({
   handleChange: () => {},
   handleBlur: () => {},
   setFieldValue: () => { return createFormBag<any>({}); },
+  setFieldTouched: () => { return createFormBag<any>({}); },
 });
 
 const FormConsumer = FormContext.Consumer;
@@ -62,6 +63,7 @@ type FormProps<TValues> = {
 
 interface FormActions<TValues> {
   setFieldValue(name: keyof TValues, value: any, shouldValidate: boolean): FormBag<TValues>;
+  setFieldTouched(name: keyof TValues): FormBag<TValues>;
   handleChange: (name: keyof TValues, value: any) => void;
   handleBlur: (name: keyof TValues) => void;
 }
@@ -98,10 +100,14 @@ export class FormData<TValues extends object> extends React.Component<FormProps<
 
   private setFieldValue(name: keyof TValues, value: any, shouldValidate: boolean): FormBag<TValues> {
     const { bag } = this.props;
-    const { touched, values } = this.props.bag;
-    const newValues = { ...values, [name]: value };
-    const newTouched = { ...touched, [name]: true };
-    return this.updateBag(newValues, newTouched, shouldValidate);
+    const newValues = { ...bag.values, [name]: value };
+    return this.updateBag(newValues, bag.touched, shouldValidate);
+  }
+
+  private setFieldTouched(name: keyof TValues): FormBag<TValues> {
+    const { bag } = this.props;
+    const newTouched = { ...bag.touched, [name]: true };
+    return this.updateBag(bag.values, newTouched, false);
   }
 
   private handleChange = (name: keyof TValues, value: any) => {
@@ -116,12 +122,13 @@ export class FormData<TValues extends object> extends React.Component<FormProps<
   }
 
   public render() {
-    const { handleBlur, handleChange, setFieldValue } = this;
+    const { handleBlur, handleChange, setFieldValue, setFieldTouched } = this;
     const ctx = { 
       bag: this.props.bag,
       handleBlur,
       handleChange,
       setFieldValue,
+      setFieldTouched,
     };
 
     return (
@@ -191,6 +198,7 @@ export type FieldComponentProps<TValues=any, TValue=any> = React.PropsWithChildr
   readonly change: (value: TValue) => void;
   readonly blur: () => void;
   readonly setFieldValue: (name: keyof TValues, value: TValue, shouldValidate: boolean) => FormBag<TValues>;
+  readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
 
 export class Field<TValues=object> extends React.Component<FieldProps<TValues>> {
@@ -247,6 +255,7 @@ export class Field<TValues=object> extends React.Component<FieldProps<TValues>> 
         change: (value: any) => this.context.handleChange(this.props.name, value),
         blur: () => this.context.handleBlur(this.props.name),
         setFieldValue: this.context.setFieldValue,
+        setFieldTouched: this.context.setFieldTouched,
         children,
       };
       return React.createElement(component as any, componentProps);

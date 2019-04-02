@@ -30,6 +30,7 @@ declare type FormProps<TValues> = {
 };
 interface FormActions<TValues> {
     setFieldValue(name: keyof TValues, value: any, shouldValidate: boolean): FormBag<TValues>;
+    setFieldTouched(name: keyof TValues): FormBag<TValues>;
     handleChange: (name: keyof TValues, value: any) => void;
     handleBlur: (name: keyof TValues) => void;
 }
@@ -37,6 +38,7 @@ export declare class FormData<TValues extends object> extends React.Component<Fo
     static defaultProps: Partial<FormProps<any>>;
     private updateBag;
     private setFieldValue;
+    private setFieldTouched;
     private handleChange;
     private handleBlur;
     render(): JSX.Element;
@@ -75,6 +77,7 @@ export declare type FieldComponentProps<TValues = any, TValue = any> = React.Pro
     readonly change: (value: TValue) => void;
     readonly blur: () => void;
     readonly setFieldValue: (name: keyof TValues, value: TValue, shouldValidate: boolean) => FormBag<TValues>;
+    readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
 export declare class Field<TValues = object> extends React.Component<FieldProps<TValues>> {
     static contextType: React.Context<FormContextDef>;
