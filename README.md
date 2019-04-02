@@ -41,18 +41,33 @@ Differences from Formik:
 Performance
 -----------
 
-Performance seems fine with 100+ fields when you disable the React DevTools
-extension and use the production build of React, but it isn't great when you
-use the development build and leave React DevTools on with this many fields.
+Performance is not the focus of Formage, but it seems to work fine with lots of
+fields when you disable the React DevTools extension and use the production
+build of React.
 
-On my old dual core 2015 MacBook Pro, I get 11ms render times with 500 fields
-on the page in production mode, but the form is completely unusable in
-development mode. YMMV.
+Formage is overall a bit faster than Formik in the tests I ran on my old dual
+core 2015 MacBook Pro using Chrome, especially in development mode. As this is
+an internet pseudo-benchmark, all usual disclaimers about flawed methodologies
+apply, YMMV, etc etc. It is not intended to say "Formik slow Formage fast blah
+blah blah", it's intended to say "this is probably not slower than what you
+can expect from the alternative".
 
-This library trades performance in these circumstances for brutal simplicity.
-I'm investigating ways to speed it up, but if those improvements don't fit in
-with the ultimate goal of retaining that simplicity, limitations on the number
-of fields will probably remain.
+The time column is the total time to taken handle a single keypress, as
+reported by Chrome's devtools:
+
+| Test | Build | Time |
+| ---- | ----- | ----:|
+| Formage | prod | 18ms |
+| Formik FastField | prod | 20ms |
+| Formik Field | prod | 38ms |
+| Formage | dev | 140ms |
+| Formik FastField | dev | 300ms |
+| Formik Field | dev | 330ms |
+
+This library favours brutal simplicity over performance. I'm investigating ways
+to speed it up, but if those improvements don't fit in with the ultimate goal
+of retaining that simplicity, limitations on the number of fields will probably
+remain.
 
 
 Simple TypeScript example
@@ -91,7 +106,7 @@ export class BasicExample extends React.Component<{}, State> {
     // their validation messages will not be shown:
     const bag = validateFormBag(this.state.bag, this.validate);
 
-    // If you don't save the validated bag, you won't see any new errors:
+    // If you don't save the bag, you won't see any new errors:
     this.setState({ bag });
 
     if (bag.valid) {

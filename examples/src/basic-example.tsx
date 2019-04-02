@@ -8,6 +8,7 @@ type Props = {};
 type Values = {
   readonly foo: string;
   readonly bar: string;
+  readonly email: string;
   readonly textarea: string;
   readonly check: boolean;
   readonly reactSelect: string;
@@ -27,6 +28,7 @@ export class BasicExample extends React.Component<Props, State> {
       bag: createFormBag({
         foo: 'yeps',
         bar: 'yeppo',
+        email: '',
         textarea: 'yeppers',
         check: false,
         reactSelect: 'pants',
@@ -58,7 +60,9 @@ export class BasicExample extends React.Component<Props, State> {
         errors[key] = 'Value is required';
       }
     }
-
+    if (values.email.indexOf('@') < 0) {
+      errors.email = 'Email invalid';
+    }
     if (values.foo !== 'yep') {
       errors.foo = 'Foo must be "yep"';
     }
@@ -86,6 +90,12 @@ export class BasicExample extends React.Component<Props, State> {
             <label>Bar</label>
             <Field<Values> name="bar" />
             <div className="error">{touched.bar && errors.bar}</div>
+          </div>
+
+          <div>
+            <label>Email</label>
+            <Field<Values> name="email" />
+            <FieldError<Values> name="email" className="error" />
           </div>
 
           <div>

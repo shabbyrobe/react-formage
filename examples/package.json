@@ -14,7 +14,8 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-select": "2.4.2",
-    "react-formage": "../"
+    "react-formage": "../",
+    "formik": ""
   },
   "devDependencies": {
     "@types/react": "^16.8.10",

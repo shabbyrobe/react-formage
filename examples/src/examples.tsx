@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { BasicExample } from './basic-example';
 import { LotsaInputsExample } from './lotsa-inputs';
+import { LotsaInputsFormikExample } from './lotsa-inputs-formik';
 
 const Container = (props: any) => (
   <div style={{
@@ -45,6 +46,7 @@ type Example = {
 const examples: ReadonlyArray<Example> = [
   { id: 'Control Types', component: () => <BasicExample /> },
   { id: 'Lotsa Inputs', component: () => <LotsaInputsExample /> },
+  { id: 'Lotsa Inputs (Formik)', component: () => <LotsaInputsFormikExample /> },
 ];
 
 export class Examples extends React.Component<Props, State> {
