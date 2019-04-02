@@ -52,8 +52,8 @@ apply, YMMV, etc etc. It is not intended to say "Formik slow Formage fast blah
 blah blah", it's intended to say "this is probably not slower than what you
 can expect from the alternative".
 
-The time column is the total time to taken handle a single keypress, as
-reported by Chrome's devtools:
+The time column is the total time to taken handle a single keypress on a form
+with 1,000 fields, as reported by Chrome's devtools:
 
 | Test | Build | Time |
 | ---- | ----- | ----:|
