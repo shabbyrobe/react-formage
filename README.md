@@ -37,6 +37,10 @@ Differences from Formik:
   schema, you write some simple imperative code and that's it.
 - No HOCs (please god, no HOCs)
 
+TODO:
+
+- Async validation support
+
 
 Performance
 -----------
