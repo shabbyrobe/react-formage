@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { BasicExample } from './basic-example';
 import { LotsaInputsExample } from './lotsa-inputs';
+import { AsyncValidationExample } from './async-validation';
 import { LotsaInputsFormikExample } from './lotsa-inputs-formik';
 
 const Container = (props: any) => (
@@ -46,6 +47,7 @@ type Example = {
 const examples: ReadonlyArray<Example> = [
   { id: 'Control Types', component: () => <BasicExample /> },
   { id: 'Lotsa Inputs', component: () => <LotsaInputsExample /> },
+  { id: 'Async Validation', component: () => <AsyncValidationExample /> },
   { id: 'Lotsa Inputs (Formik)', component: () => <LotsaInputsFormikExample /> },
 ];
 
