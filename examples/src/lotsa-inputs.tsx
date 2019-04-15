@@ -68,6 +68,9 @@ export class LotsaInputsExample extends React.Component<Props, State> {
             }} />
           </div>
           
+          <hr />
+          <button type="submit">Submit</button>
+            
           {Array.from({length: this.state.inputs}, (x,i) => (
             <div key={i}>
               <label>{`field${i}`}</label>
