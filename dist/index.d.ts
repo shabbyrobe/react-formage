@@ -18,7 +18,9 @@ export declare type FormBag<TValues> = {
     readonly valid: boolean;
     readonly values: TValues;
 };
-export declare function createFormBag<TValues>(values: TValues): FormBag<TValues>;
+export declare function createFormBag<TValues>(values: TValues, options?: {
+    initialValid?: boolean;
+}): FormBag<TValues>;
 export declare function validateFormBag<TValues>(bag: FormBag<TValues>, validator: FormValidator<TValues>): FormBag<TValues>;
 export declare type FormValidator<TValues> = (values: TValues) => FormErrors<TValues>;
 declare type FormProps<TValues> = {
@@ -34,6 +36,8 @@ interface FormActions<TValues> {
     handleChange: (name: keyof TValues, value: any) => void;
     handleBlur: (name: keyof TValues) => void;
 }
+/** FormData provides a context to one or more Field components, validates the
+ *  field values and propagates updates to the parent component. */
 export declare class FormData<TValues extends object> extends React.Component<FormProps<TValues>> {
     static defaultProps: Partial<FormProps<any>>;
     private updateBag;
@@ -63,14 +67,17 @@ declare type Styleable = {
     /** 'style' is ignored if 'component' is used */
     readonly style?: React.CSSProperties;
 };
-declare type FieldProps<TValues = any> = Styleable & {
+declare type FieldProps<TValues = any> = Styleable & FieldRenderProps<TValues> & {
     readonly name: keyof TValues;
-    /**
-     * If component is set to 'input', 'type' is used for the input type, i.e.
-     * 'checkbox', 'radio', etc.
-     */
+    /** If component is set to 'input', 'type' is used for the input type, i.e.
+     *  'checkbox', 'radio', etc. */
     readonly type?: 'text' | 'number' | 'radio' | 'checkbox' | string;
-    readonly component?: 'input' | 'textarea' | 'select' | React.ComponentType<FieldComponentProps<TValues>>;
+};
+declare type FieldRenderProps<TValues> = {
+    readonly render: ((props: FieldComponentProps<TValues>) => React.ReactNode);
+} | {
+    readonly component?: 'input' | 'textarea' | 'select';
+    readonly disabled?: boolean;
 };
 export declare type FieldComponentProps<TValues = any, TValue = any> = React.PropsWithChildren<{
     readonly value: TValue;
@@ -86,6 +93,7 @@ export declare class Field<TValues = object> extends React.Component<FieldProps<
     private onChange;
     private onBlur;
     private extractValue;
+    private componentProps;
     render(): React.ReactNode;
 }
 export {};

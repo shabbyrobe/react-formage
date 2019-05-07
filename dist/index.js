@@ -16,8 +16,13 @@ const FormContext = React.createContext({
     setFieldTouched: () => { return createFormBag({}); },
 });
 const FormConsumer = FormContext.Consumer;
-export function createFormBag(values) {
-    return { errors: {}, touched: {}, valid: true, values: values };
+export function createFormBag(values, options) {
+    return {
+        errors: {},
+        touched: {},
+        valid: (options && options.initialValid !== undefined) ? options.initialValid : false,
+        values: values,
+    };
 }
 export function validateFormBag(bag, validator) {
     const errors = validator(bag.values);
@@ -28,13 +33,13 @@ export function validateFormBag(bag, validator) {
     }
     return {
         errors,
-        touched: touched,
+        touched,
         valid,
         values: bag.values,
     };
 }
-// FormData provides a context to one or more Field components, validates the
-// field values and propagates updates to the parent component.
+/** FormData provides a context to one or more Field components, validates the
+ *  field values and propagates updates to the parent component. */
 export class FormData extends React.Component {
     constructor() {
         super(...arguments);
@@ -119,38 +124,40 @@ export class Field extends React.Component {
         };
     }
     extractValue(target) {
-        const { component, type } = this.props;
+        const { type } = this.props;
         if (type === 'checkbox' || type === 'radio') {
             return target.checked;
         }
         return target.value;
     }
+    componentProps(name, children) {
+        return {
+            value: this.context.bag.values[name],
+            change: (value) => this.context.handleChange(this.props.name, value),
+            blur: () => this.context.handleBlur(this.props.name),
+            setFieldValue: this.context.setFieldValue,
+            setFieldTouched: this.context.setFieldTouched,
+            children,
+        };
+    }
     render() {
-        const _a = this.props, { component, name, children } = _a, props = __rest(_a, ["component", "name", "children"]);
-        let extra = {};
-        if (typeof component === 'string' || component instanceof String) {
-            if (props.type === 'checkbox' || props.type === 'radio') {
-                extra = { type: props.type, checked: this.context.bag.values[name] };
-            }
-            else if (props.type) {
-                extra = { type: props.type };
-            }
-            return React.createElement(component, Object.assign({}, props, extra, { onChange: this.onChange, onBlur: this.onBlur, children, 
-                // Without the '', if the key does not exist, react warns about
-                // uncontrolled components:
-                value: this.context.bag.values[name] || '' }));
+        const _a = this.props, { name, children } = _a, props = __rest(_a, ["name", "children"]);
+        if ('render' in this.props) {
+            const componentProps = this.componentProps(name, children);
+            return this.props.render(componentProps);
         }
-        else {
-            const componentProps = {
-                value: this.context.bag.values[name],
-                change: (value) => this.context.handleChange(this.props.name, value),
-                blur: () => this.context.handleBlur(this.props.name),
-                setFieldValue: this.context.setFieldValue,
-                setFieldTouched: this.context.setFieldTouched,
-                children,
-            };
-            return React.createElement(component, componentProps);
+        if (!('component' in this.props)) {
+            throw new Error('formage: must include render or component prop');
         }
+        const { component, disabled, type } = this.props;
+        const extra = { disabled, type };
+        if (props.type === 'checkbox' || props.type === 'radio') {
+            extra.checked = this.context.bag.values[name];
+        }
+        return React.createElement(component, Object.assign({}, props, extra, { onChange: this.onChange, onBlur: this.onBlur, children, 
+            // Without the '', if the key does not exist, react warns about
+            // uncontrolled components:
+            value: this.context.bag.values[name] || '' }));
     }
 }
 Field.contextType = FormContext;

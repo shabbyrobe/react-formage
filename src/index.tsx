@@ -53,7 +53,7 @@ export function validateFormBag<TValues>(bag: FormBag<TValues>, validator: FormV
 
   return {
     errors,
-    touched: touched,
+    touched,
     valid,
     values: bag.values,
   };
@@ -77,8 +77,8 @@ interface FormActions<TValues> {
   handleBlur: (name: keyof TValues) => void;
 }
 
-// FormData provides a context to one or more Field components, validates the
-// field values and propagates updates to the parent component.
+/** FormData provides a context to one or more Field components, validates the
+ *  field values and propagates updates to the parent component. */
 export class FormData<TValues extends object> extends React.Component<FormProps<TValues>> {
   public static defaultProps: Partial<FormProps<any>> = {
     validateOnChange: true,
@@ -189,18 +189,21 @@ type Styleable = {
   readonly style?: React.CSSProperties;
 };
 
-type FieldProps<TValues=any> = Styleable & {
+type FieldProps<TValues=any> = Styleable & FieldRenderProps<TValues> & {
   readonly name: keyof TValues;
 
-  /**
-   * If component is set to 'input', 'type' is used for the input type, i.e.
-   * 'checkbox', 'radio', etc.
-   */
+  /** If component is set to 'input', 'type' is used for the input type, i.e.
+   *  'checkbox', 'radio', etc. */
   readonly type?: 'text' | 'number' | 'radio' | 'checkbox' | string;
-
-  readonly component?: 'input' | 'textarea' | 'select'
-    | React.ComponentType<FieldComponentProps<TValues>>;
 };
+
+type FieldRenderProps<TValues> = 
+  { readonly render: ((props: FieldComponentProps<TValues>) => React.ReactNode) } |
+  {
+    readonly component?: 'input' | 'textarea' | 'select';
+    readonly disabled?: boolean;
+  }
+;
 
 export type FieldComponentProps<TValues=any, TValue=any> = React.PropsWithChildren<{
   readonly value: TValue;
@@ -227,48 +230,52 @@ export class Field<TValues=object> extends React.Component<FieldProps<TValues>> 
   };
 
   private extractValue(target: HTMLInputElement): any {
-    const { component, type } = this.props;
+    const { type } = this.props;
     if (type === 'checkbox' || type === 'radio') {
       return target.checked;
     }
     return target.value;
   }
 
+  private componentProps(name: keyof TValues, children?: React.ReactNode): FieldComponentProps<TValues> {
+    return {
+      value: this.context.bag.values[name],
+      change: (value: any) => this.context.handleChange(this.props.name, value),
+      blur: () => this.context.handleBlur(this.props.name),
+      setFieldValue: this.context.setFieldValue,
+      setFieldTouched: this.context.setFieldTouched,
+      children,
+    };
+  }
+
   public render(): React.ReactNode {
-    const { component, name, children, ...props } = this.props;
+    const { name, children, ...props } = this.props;
 
-    let extra = {};
-
-    if (typeof component === 'string' || component instanceof String) {
-      if (props.type === 'checkbox' || props.type === 'radio') {
-        extra = { type: props.type, checked: this.context.bag.values[name] };
-      } else if (props.type) {
-        extra = { type: props.type };
-      }
-
-      return React.createElement(component as any, {
-        ...props,
-        ...extra,
-        onChange: this.onChange,
-        onBlur: this.onBlur,
-        children,
-
-        // Without the '', if the key does not exist, react warns about
-        // uncontrolled components:
-        value: this.context.bag.values[name] || '',
-      });
-
-    } else {
-      const componentProps: FieldComponentProps<TValues> = {
-        value: this.context.bag.values[name],
-        change: (value: any) => this.context.handleChange(this.props.name, value),
-        blur: () => this.context.handleBlur(this.props.name),
-        setFieldValue: this.context.setFieldValue,
-        setFieldTouched: this.context.setFieldTouched,
-        children,
-      };
-      return React.createElement(component as any, componentProps);
+    if ('render' in this.props) {
+      const componentProps = this.componentProps(name, children);
+      return this.props.render(componentProps);
     }
+
+    if (! ('component' in this.props)) {
+      throw new Error('formage: must include render or component prop')
+    }
+
+    const { component, disabled, type } = this.props;
+    const extra: any = { disabled, type };
+    if (props.type === 'checkbox' || props.type === 'radio') {
+      extra.checked = this.context.bag.values[name];
+    }
+
+    return React.createElement(component as any, {
+      ...props,
+      ...extra,
+      onChange: this.onChange,
+      onBlur: this.onBlur,
+      children,
+
+      // Without the '', if the key does not exist, react warns about
+      // uncontrolled components:
+      value: this.context.bag.values[name] || '',
+    });
   }
 }
-
