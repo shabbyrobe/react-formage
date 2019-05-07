@@ -1,16 +1,18 @@
 import * as React from 'react';
-declare type FormContextDef<T = {}> = FormActions<T> & {
+declare type FormContextDef<T = any> = FormActions<T> & {
     readonly bag: FormBag<T>;
+    readonly validate?: FormValidator<T>;
+    updateBag(values: T, touched: FormTouched<T>, shouldValidate: boolean): FormBag<T>;
 };
 export declare type FormUpdateEvent<TValues> = {
     readonly bag: FormBag<TValues>;
     readonly name: keyof TValues;
 };
-export declare type FormErrors<TValues> = {
-    -readonly [K in keyof TValues]?: string;
+export declare type FormErrors<TValues, TKey = keyof TValues> = {
+    -readonly [TKey in keyof TValues]?: TValues[TKey] extends object ? FormErrors<TValues[TKey], TKey> : string;
 };
-export declare type FormTouched<TValues> = {
-    -readonly [K in keyof TValues]?: boolean;
+export declare type FormTouched<TValues, TKey = keyof TValues> = {
+    -readonly [TKey in keyof TValues]?: TValues[TKey] extends object ? FormTouched<TValues[TKey], TKey> : boolean;
 };
 export declare type FormBag<TValues> = {
     readonly errors: FormErrors<TValues>;
@@ -40,7 +42,23 @@ interface FormActions<TValues> {
  *  field values and propagates updates to the parent component. */
 export declare class FormData<TValues extends object> extends React.Component<FormProps<TValues>> {
     static defaultProps: Partial<FormProps<any>>;
-    private updateBag;
+    updateBag: (values: TValues, touched: FormTouched<TValues, keyof TValues>, shouldValidate: boolean) => FormBag<TValues>;
+    private setFieldValue;
+    private setFieldTouched;
+    private handleChange;
+    private handleBlur;
+    render(): JSX.Element;
+}
+declare type SubFormProps<TParentValues> = {
+    readonly name: keyof TParentValues;
+    readonly validateOnChange?: boolean;
+    readonly validateOnBlur?: boolean;
+};
+export declare class SubForm<TParentValues extends object, TKey extends keyof TParentValues, TValues extends TParentValues[TKey]> extends React.Component<SubFormProps<TParentValues>> {
+    static defaultProps: Partial<SubFormProps<any>>;
+    static contextType: React.Context<FormContextDef>;
+    context: FormContextDef<TParentValues>;
+    updateBag: (values: TValues, touched: FormTouched<TValues, keyof TValues>, shouldValidate: boolean) => FormBag<TValues>;
     private setFieldValue;
     private setFieldTouched;
     private handleChange;

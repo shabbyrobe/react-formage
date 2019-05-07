@@ -1,17 +1,12 @@
 import * as React from 'react';
 
-type FormContextDef<T={}> = FormActions<T> & {
-  readonly bag: FormBag<T>
+type FormContextDef<T=any> = FormActions<T> & {
+  readonly bag: FormBag<T>;
+  readonly validate?: FormValidator<T>;
+  updateBag(values: T, touched: FormTouched<T>, shouldValidate: boolean): FormBag<T>;
 };
 
-const FormContext = React.createContext<FormContextDef>({
-  bag: createFormBag<any>({}),
-  handleChange: () => {},
-  handleBlur: () => {},
-  setFieldValue: () => { return createFormBag<any>({}); },
-  setFieldTouched: () => { return createFormBag<any>({}); },
-});
-
+const FormContext = React.createContext<FormContextDef>(null as any);
 const FormConsumer = FormContext.Consumer;
 
 export type FormUpdateEvent<TValues> = {
@@ -19,8 +14,21 @@ export type FormUpdateEvent<TValues> = {
   readonly name: keyof TValues;
 }
 
-export type FormErrors<TValues> = { -readonly [K in keyof TValues]?: string };
-export type FormTouched<TValues> = { -readonly [K in keyof TValues]?: boolean };
+
+export type FormErrors<TValues, TKey = keyof TValues> = {
+  -readonly [TKey in keyof TValues]?: 
+    TValues[TKey] extends object ?
+      FormErrors<TValues[TKey], TKey> :
+      string
+};
+
+export type FormTouched<TValues, TKey = keyof TValues> = {
+  -readonly [TKey in keyof TValues]?: 
+    TValues[TKey] extends object ?
+      FormTouched<TValues[TKey], TKey> :
+      boolean
+};
+
 
 export type FormBag<TValues> = {
   readonly errors: FormErrors<TValues>;
@@ -44,12 +52,8 @@ export function createFormBag<TValues>(
 
 export function validateFormBag<TValues>(bag: FormBag<TValues>, validator: FormValidator<TValues>): FormBag<TValues> {
   const errors = validator(bag.values);
-  const valid = Object.keys(errors).length === 0;
-
-  const touched = { ...bag.touched};
-  for (const key of Object.keys(errors)) {
-    touched[key as keyof TValues] = true;
-  }
+  const valid = isValid(errors);
+  const touched = touchAll(errors, { ...bag.touched});
 
   return {
     errors,
@@ -85,7 +89,7 @@ export class FormData<TValues extends object> extends React.Component<FormProps<
     validateOnBlur: true,
   };
 
-  private updateBag(values: TValues, touched: FormTouched<TValues>, shouldValidate: boolean): FormBag<TValues> {
+  public updateBag = (values: TValues, touched: FormTouched<TValues>, shouldValidate: boolean): FormBag<TValues> => {
     const { bag } = this.props;
 
     let errors = bag.errors;
@@ -95,15 +99,8 @@ export class FormData<TValues extends object> extends React.Component<FormProps<
       valid = Object.keys(errors).length === 0;
     }
 
-    const updated = {
-      errors,
-      touched,
-      valid,
-      values,
-    };
-
+    const updated = { errors, touched, valid, values };
     this.props.onUpdate({ name, bag: updated });
-
     return updated;
   }
 
@@ -131,20 +128,94 @@ export class FormData<TValues extends object> extends React.Component<FormProps<
   }
 
   public render() {
-    const { handleBlur, handleChange, setFieldValue, setFieldTouched } = this;
-    const ctx = { 
+    const { handleBlur, handleChange, setFieldValue, setFieldTouched, updateBag } = this;
+    const ctx: FormContextDef<any> = { 
       bag: this.props.bag,
-      handleBlur,
-      handleChange,
+      validate: this.props.validate,
+      handleBlur: handleBlur as any,
+      handleChange: handleChange as any,
       setFieldValue,
       setFieldTouched,
+      updateBag,
     };
 
-    return (
-      <FormContext.Provider value={ctx}>
-        {this.props.children}
-      </FormContext.Provider>
-    )
+    return <FormContext.Provider value={ctx}>{this.props.children}</FormContext.Provider>;
+  }
+}
+
+type SubFormProps<TParentValues> = {
+  readonly name: keyof TParentValues;
+  readonly validateOnChange?: boolean;
+  readonly validateOnBlur?: boolean;
+};
+
+export class SubForm<
+  TParentValues extends object,
+  TKey extends keyof TParentValues,
+  TValues extends TParentValues[TKey],
+> extends React.Component<SubFormProps<TParentValues>> {
+
+  public static defaultProps: Partial<SubFormProps<any>> = {
+    validateOnChange: true,
+    validateOnBlur: true,
+  };
+
+  public static contextType: React.Context<FormContextDef> = FormContext;
+  public context!: FormContextDef<TParentValues>;
+
+  public updateBag = (values: TValues, touched: FormTouched<TValues>, shouldValidate: boolean): FormBag<TValues> => {
+    const updated = this.context.updateBag(
+      { ...this.context.bag.values, [this.props.name]: values },
+      { ...this.context.bag.touched, [this.props.name]: touched },
+      shouldValidate,
+    );
+
+    return {
+      valid: updated.valid,
+      errors: updated.errors[this.props.name] as any,
+      touched: updated.touched[this.props.name] as any,
+      values: updated.values[this.props.name],
+    } as any;
+  }
+
+  private setFieldValue(name: keyof TValues, value: any, shouldValidate: boolean): FormBag<TValues> {
+    const newValues: TValues = { ...this.context.bag.values[this.props.name], [name]: value } as any;
+    return this.updateBag(newValues, this.context.bag.touched[this.props.name] as any, shouldValidate);
+  }
+
+  private setFieldTouched(name: keyof TValues): FormBag<TValues> {
+    const newTouched  = { ...this.context.bag.touched[this.props.name], [name]: true } as any;
+    return this.updateBag(this.context.bag.values[this.props.name] as any, newTouched as any, false);
+  }
+
+  private handleChange = (name: keyof TValues, value: any) => {
+    this.setFieldValue(name, value, !!this.props.validateOnChange);
+  }
+
+  private handleBlur = (name: keyof TValues) => {
+    const touched = this.context.bag.touched[this.props.name];
+    const values = this.context.bag.values[this.props.name];
+    const newTouched = { ...touched, [name]: true } as any;
+    return this.updateBag(values as any, newTouched as any, !!this.props.validateOnBlur);
+  }
+
+  public render() {
+    const { handleBlur, handleChange, setFieldValue, setFieldTouched, updateBag } = this;
+    const ctx: FormContextDef<any> = { 
+      bag: {
+        valid: true,
+        errors: this.context.bag.errors[this.props.name] || {} as any,
+        touched: this.context.bag.touched[this.props.name] || {} as any,
+        values: this.context.bag.values[this.props.name] || {},
+      },
+      handleBlur: handleBlur as any,
+      handleChange: handleChange as any,
+      setFieldValue,
+      setFieldTouched,
+      updateBag,
+    };
+
+    return <FormContext.Provider value={ctx as any}>{this.props.children}</FormContext.Provider>;
   }
 }
 
@@ -171,6 +242,9 @@ export class FieldError<TValues=object> extends React.Component<FieldErrorProps<
     const message = this.context.bag.errors[name];
     if (!touched || !message) {
       return null;
+    }
+    if (typeof message !== 'string') {
+      throw new Error(); // FIXME: improve error
     }
 
     if (component) {
@@ -278,4 +352,31 @@ export class Field<TValues=object> extends React.Component<FieldProps<TValues>> 
       value: this.context.bag.values[name] || '',
     });
   }
+}
+
+function touchAll(errors: any, touched: any): any {
+  if (!touched) {
+    touched = {};
+  }
+  for (const key of Object.keys(errors)) {
+    if (typeof errors[key] === 'string') {
+      touched[key] = true;
+    } else {
+      touched[key] = touchAll(errors[key], touched[key]);
+    }
+  }
+  return touched;
+}
+
+function isValid(errors: any): boolean {
+  for (const key of Object.keys(errors)) {
+    if (typeof (errors as any)[key] === 'string') {
+      return false;
+    } else {
+      if (!isValid(errors[key])) {
+        return false;
+      }
+    }
+  }
+  return true;
 }

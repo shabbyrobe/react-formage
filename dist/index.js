@@ -8,13 +8,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 import * as React from 'react';
-const FormContext = React.createContext({
-    bag: createFormBag({}),
-    handleChange: () => { },
-    handleBlur: () => { },
-    setFieldValue: () => { return createFormBag({}); },
-    setFieldTouched: () => { return createFormBag({}); },
-});
+const FormContext = React.createContext(null);
 const FormConsumer = FormContext.Consumer;
 export function createFormBag(values, options) {
     return {
@@ -26,11 +20,8 @@ export function createFormBag(values, options) {
 }
 export function validateFormBag(bag, validator) {
     const errors = validator(bag.values);
-    const valid = Object.keys(errors).length === 0;
-    const touched = Object.assign({}, bag.touched);
-    for (const key of Object.keys(errors)) {
-        touched[key] = true;
-    }
+    const valid = isValid(errors);
+    const touched = touchAll(errors, Object.assign({}, bag.touched));
     return {
         errors,
         touched,
@@ -43,6 +34,18 @@ export function validateFormBag(bag, validator) {
 export class FormData extends React.Component {
     constructor() {
         super(...arguments);
+        this.updateBag = (values, touched, shouldValidate) => {
+            const { bag } = this.props;
+            let errors = bag.errors;
+            let valid = bag.valid;
+            if (shouldValidate && this.props.validate) {
+                errors = this.props.validate(values);
+                valid = Object.keys(errors).length === 0;
+            }
+            const updated = { errors, touched, valid, values };
+            this.props.onUpdate({ name, bag: updated });
+            return updated;
+        };
         this.handleChange = (name, value) => {
             this.setFieldValue(name, value, !!this.props.validateOnChange);
         };
@@ -52,23 +55,6 @@ export class FormData extends React.Component {
             const newTouched = Object.assign({}, touched, { [name]: true });
             return this.updateBag(values, newTouched, !!this.props.validateOnBlur);
         };
-    }
-    updateBag(values, touched, shouldValidate) {
-        const { bag } = this.props;
-        let errors = bag.errors;
-        let valid = bag.valid;
-        if (shouldValidate && this.props.validate) {
-            errors = this.props.validate(values);
-            valid = Object.keys(errors).length === 0;
-        }
-        const updated = {
-            errors,
-            touched,
-            valid,
-            values,
-        };
-        this.props.onUpdate({ name, bag: updated });
-        return updated;
     }
     setFieldValue(name, value, shouldValidate) {
         const { bag } = this.props;
@@ -81,21 +67,76 @@ export class FormData extends React.Component {
         return this.updateBag(bag.values, newTouched, false);
     }
     render() {
-        const { handleBlur, handleChange, setFieldValue, setFieldTouched } = this;
+        const { handleBlur, handleChange, setFieldValue, setFieldTouched, updateBag } = this;
         const ctx = {
             bag: this.props.bag,
-            handleBlur,
-            handleChange,
+            validate: this.props.validate,
+            handleBlur: handleBlur,
+            handleChange: handleChange,
             setFieldValue,
             setFieldTouched,
+            updateBag,
         };
-        return (React.createElement(FormContext.Provider, { value: ctx }, this.props.children));
+        return React.createElement(FormContext.Provider, { value: ctx }, this.props.children);
     }
 }
 FormData.defaultProps = {
     validateOnChange: true,
     validateOnBlur: true,
 };
+export class SubForm extends React.Component {
+    constructor() {
+        super(...arguments);
+        this.updateBag = (values, touched, shouldValidate) => {
+            const updated = this.context.updateBag(Object.assign({}, this.context.bag.values, { [this.props.name]: values }), Object.assign({}, this.context.bag.touched, { [this.props.name]: touched }), shouldValidate);
+            return {
+                valid: updated.valid,
+                errors: updated.errors[this.props.name],
+                touched: updated.touched[this.props.name],
+                values: updated.values[this.props.name],
+            };
+        };
+        this.handleChange = (name, value) => {
+            this.setFieldValue(name, value, !!this.props.validateOnChange);
+        };
+        this.handleBlur = (name) => {
+            const touched = this.context.bag.touched[this.props.name];
+            const values = this.context.bag.values[this.props.name];
+            const newTouched = Object.assign({}, touched, { [name]: true });
+            return this.updateBag(values, newTouched, !!this.props.validateOnBlur);
+        };
+    }
+    setFieldValue(name, value, shouldValidate) {
+        const newValues = Object.assign({}, this.context.bag.values[this.props.name], { [name]: value });
+        return this.updateBag(newValues, this.context.bag.touched[this.props.name], shouldValidate);
+    }
+    setFieldTouched(name) {
+        const newTouched = Object.assign({}, this.context.bag.touched[this.props.name], { [name]: true });
+        return this.updateBag(this.context.bag.values[this.props.name], newTouched, false);
+    }
+    render() {
+        const { handleBlur, handleChange, setFieldValue, setFieldTouched, updateBag } = this;
+        const ctx = {
+            bag: {
+                valid: true,
+                errors: this.context.bag.errors[this.props.name] || {},
+                touched: this.context.bag.touched[this.props.name] || {},
+                values: this.context.bag.values[this.props.name] || {},
+            },
+            handleBlur: handleBlur,
+            handleChange: handleChange,
+            setFieldValue,
+            setFieldTouched,
+            updateBag,
+        };
+        return React.createElement(FormContext.Provider, { value: ctx }, this.props.children);
+    }
+}
+SubForm.defaultProps = {
+    validateOnChange: true,
+    validateOnBlur: true,
+};
+SubForm.contextType = FormContext;
 export class FieldError extends React.Component {
     render() {
         const _a = this.props, { component, name } = _a, props = __rest(_a, ["component", "name"]);
@@ -103,6 +144,9 @@ export class FieldError extends React.Component {
         const message = this.context.bag.errors[name];
         if (!touched || !message) {
             return null;
+        }
+        if (typeof message !== 'string') {
+            throw new Error(); // FIXME: improve error
         }
         if (component) {
             return React.createElement(component, { touched, message: message });
@@ -164,4 +208,31 @@ Field.contextType = FormContext;
 Field.defaultProps = {
     component: 'input',
 };
+function touchAll(errors, touched) {
+    if (!touched) {
+        touched = {};
+    }
+    for (const key of Object.keys(errors)) {
+        if (typeof errors[key] === 'string') {
+            touched[key] = true;
+        }
+        else {
+            touched[key] = touchAll(errors[key], touched[key]);
+        }
+    }
+    return touched;
+}
+function isValid(errors) {
+    for (const key of Object.keys(errors)) {
+        if (typeof errors[key] === 'string') {
+            return false;
+        }
+        else {
+            if (!isValid(errors[key])) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
 //# sourceMappingURL=index.js.map
