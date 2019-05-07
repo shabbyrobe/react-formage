@@ -112,16 +112,14 @@ export class BasicExample extends React.Component<Props, State> {
 
           <div>
             <label>React Select</label>
-            <Field<Values> name="reactSelect" component={(props) => {
-              return (
-                <Select 
-                  options={reactSelectOptions}
-                  value={{ label: props.value, value: props.value }}
-                  onChange={(e) => props.change((e as any).value)}
-                  onBlur={() => props.blur()}
-                />
-              );
-            }}/>
+            <Field<Values> name="reactSelect" render={(props) => (
+              <Select 
+                options={reactSelectOptions}
+                value={{ label: props.value, value: props.value }}
+                onChange={(e) => props.change((e as any).value)}
+                onBlur={() => props.blur()}
+              />
+            )}/>
             <div className="error">{touched.reactSelect && errors.reactSelect}</div>
           </div>
 

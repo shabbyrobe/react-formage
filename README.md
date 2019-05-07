@@ -39,7 +39,6 @@ Differences from Formik:
 
 TODO:
 
-- Async validation support
 - Publish to NPM
 
 

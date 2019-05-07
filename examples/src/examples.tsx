@@ -1,8 +1,8 @@
 import * as React from 'react';
 
+import { AsyncValidationExample } from './async-validation';
 import { BasicExample } from './basic-example';
 import { LotsaInputsExample } from './lotsa-inputs';
-import { AsyncValidationExample } from './async-validation';
 import { LotsaInputsFormikExample } from './lotsa-inputs-formik';
 
 const Container = (props: any) => (
@@ -23,6 +23,15 @@ const Nav = (props: any) => (
   <ul style={{ gridColumn: 'nav' }}>
     {props.children}
   </ul>
+);
+
+const NavLink = (props: any) => (
+  <a style={{
+    ...(props.style || {}),
+    display: 'block',
+    margin: '10px',
+    borderBottom: '1px dotted #ccc',
+    }} {...props} />
 );
 
 const Body = (props: any) => {
@@ -46,8 +55,8 @@ type Example = {
 
 const examples: ReadonlyArray<Example> = [
   { id: 'Control Types', component: () => <BasicExample /> },
-  { id: 'Lotsa Inputs', component: () => <LotsaInputsExample /> },
   { id: 'Async Validation', component: () => <AsyncValidationExample /> },
+  { id: 'Lotsa Inputs', component: () => <LotsaInputsExample /> },
   { id: 'Lotsa Inputs (Formik)', component: () => <LotsaInputsFormikExample /> },
 ];
 
@@ -62,7 +71,7 @@ export class Examples extends React.Component<Props, State> {
       <Container>
         <Nav>
           {examples.map((v) => (
-            <li key={v.id}><a onClick={() => this.setState({ current: v })}>{v.id}</a></li>
+            <li key={v.id}><NavLink onClick={() => this.setState({ current: v })}>{v.id}</NavLink></li>
           ))}
         </Nav>
         
