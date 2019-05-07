@@ -29,8 +29,17 @@ export type FormBag<TValues> = {
   readonly values: TValues;
 };
 
-export function createFormBag<TValues>(values: TValues): FormBag<TValues> {
-  return { errors: {}, touched: {}, valid: true, values: values };
+export function createFormBag<TValues>(
+  values: TValues,
+  options?: { initialValid?: boolean; }
+): FormBag<TValues> {
+
+  return {
+    errors: {},
+    touched: {},
+    valid: (options && options.initialValid !== undefined) ? options.initialValid : false,
+    values: values,
+  };
 }
 
 export function validateFormBag<TValues>(bag: FormBag<TValues>, validator: FormValidator<TValues>): FormBag<TValues> {
