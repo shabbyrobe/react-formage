@@ -25,6 +25,7 @@
     "source-map-loader": "^0.2.4",
     "terser": "^3.17.0",
     "ts-loader": "^5.3.3",
-    "typescript": "^3.4.1"
+    "typescript": "^3.4.1",
+    "webpack": "*"
   }
 }
