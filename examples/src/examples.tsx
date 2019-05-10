@@ -5,6 +5,7 @@ import { BasicExample } from './basic-example';
 import { LotsaInputsExample } from './lotsa-inputs';
 import { LotsaInputsFormikExample } from './lotsa-inputs-formik';
 import { NestedObjectExample } from './nested-object';
+import { NestedReuseExample } from './nested-reuse';
 
 const Container = (props: any) => (
   <div style={{
@@ -58,6 +59,7 @@ const examples: ReadonlyArray<Example> = [
   { id: 'Control Types', component: () => <BasicExample /> },
   { id: 'Async Validation', component: () => <AsyncValidationExample /> },
   { id: 'Nested Object', component: () => <NestedObjectExample /> },
+  { id: 'Nested Reuse', component: () => <NestedReuseExample /> },
   { id: 'Lotsa Inputs', component: () => <LotsaInputsExample /> },
   { id: 'Lotsa Inputs (Formik)', component: () => <LotsaInputsFormikExample /> },
 ];

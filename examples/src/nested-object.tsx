@@ -73,13 +73,13 @@ export class NestedObjectExample extends React.Component<Props, State> {
           <div>
             <label>Foo</label>
             <Field<Values> name="foo" />
-            <FieldError<Values> name="foo" />
+            <FieldError<Values> name="foo" className="error" />
           </div>
 
           <div>
             <label>Bar</label>
             <Field<Values> name="bar" />
-            <FieldError<Values> name="bar" />
+            <FieldError<Values> name="bar" className="error" />
           </div>
 
           <label>Child Values</label>
@@ -87,13 +87,13 @@ export class NestedObjectExample extends React.Component<Props, State> {
             <div>
               <label>Baz</label>
               <Field<ChildValues> name="baz" />
-              <FieldError<ChildValues> name="baz" />
+              <FieldError<ChildValues> name="baz" className="error" />
             </div>
 
             <div>
               <label>Qux</label>
               <Field<ChildValues> name="qux" />
-              <FieldError<ChildValues> name="qux" />
+              <FieldError<ChildValues> name="qux" className="error" />
             </div>
           </SubForm>
 

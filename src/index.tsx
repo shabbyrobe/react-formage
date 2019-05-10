@@ -151,8 +151,7 @@ type SubFormProps<TParentValues> = {
 
 export class SubForm<
   TParentValues extends object,
-  TKey extends keyof TParentValues,
-  TValues extends TParentValues[TKey],
+  TValues extends object,
 > extends React.Component<SubFormProps<TParentValues>> {
 
   public static defaultProps: Partial<SubFormProps<any>> = {
@@ -219,6 +218,7 @@ export class SubForm<
   }
 }
 
+// FieldErrorComponentProps are passed in to the component rendered by a FieldError.
 export type FieldErrorComponentProps<TValues=any> = React.PropsWithChildren<{
   readonly touched: boolean;
   readonly message: string;
@@ -229,6 +229,11 @@ type FieldErrorProps<TValues=any> = Styleable & {
 
   /** Optional component to use instead of a <div> */
   readonly component?: React.ComponentType<FieldErrorComponentProps<TValues>>;
+
+  /** By default, FieldError is rendered even if there is no message so you can
+    * set a fixed height and expect your layout to be preserved. Set this to true
+    * if you don't want an element in the DOM even if there is no message. */
+  readonly hideIfEmpty?: boolean;
 };
 
 export class FieldError<TValues=object> extends React.Component<FieldErrorProps<TValues>> {
@@ -236,21 +241,21 @@ export class FieldError<TValues=object> extends React.Component<FieldErrorProps<
   public context!: FormContextDef<TValues>;
 
   public render() {
-    const { component, name, ...props } = this.props;
+    const { component, hideIfEmpty, name, ...props } = this.props;
 
     const touched = !!this.context.bag.touched[name];
-    const message = this.context.bag.errors[name];
-    if (!touched || !message) {
-      return null;
-    }
+    const message = (touched && this.context.bag.errors[name]) || '';
     if (typeof message !== 'string') {
       throw new Error(); // FIXME: improve error
+    }
+    if (!message && hideIfEmpty) {
+      return null;
     }
 
     if (component) {
       return React.createElement(component, { touched, message: message! });
     } else {
-      return <div {...props}>{message}</div>;
+      return React.createElement('div', props, message);
     }
   }
 }
@@ -263,13 +268,16 @@ type Styleable = {
   readonly style?: React.CSSProperties;
 };
 
-type FieldProps<TValues=any> = Styleable & FieldRenderProps<TValues> & {
+// FieldBaseProps is needed so we can derive without styling.
+type FieldBaseProps<TValues=any> = FieldRenderProps<TValues> & {
   readonly name: keyof TValues;
 
   /** If component is set to 'input', 'type' is used for the input type, i.e.
    *  'checkbox', 'radio', etc. */
   readonly type?: 'text' | 'number' | 'radio' | 'checkbox' | string;
 };
+
+type FieldProps<TValues=any> = Styleable & FieldBaseProps<TValues>;
 
 type FieldRenderProps<TValues> = 
   { readonly render: ((props: FieldComponentProps<TValues>) => React.ReactNode) } |
@@ -287,7 +295,7 @@ export type FieldComponentProps<TValues=any, TValue=any> = React.PropsWithChildr
   readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
 
-export class Field<TValues=object> extends React.Component<FieldProps<TValues>> {
+export class Field<TValues=object> extends React.PureComponent<FieldProps<TValues>> {
   public static contextType: React.Context<FormContextDef> = FormContext;
   public context!: FormContextDef<TValues>;
 
@@ -311,7 +319,7 @@ export class Field<TValues=object> extends React.Component<FieldProps<TValues>> 
     return target.value;
   }
 
-  private componentProps(name: keyof TValues, children?: React.ReactNode): FieldComponentProps<TValues> {
+  private renderProps(name: keyof TValues, children?: React.ReactNode): FieldComponentProps<TValues> {
     return {
       value: this.context.bag.values[name],
       change: (value: any) => this.context.handleChange(this.props.name, value),
@@ -323,35 +331,58 @@ export class Field<TValues=object> extends React.Component<FieldProps<TValues>> 
   }
 
   public render(): React.ReactNode {
-    const { name, children, ...props } = this.props;
+    const { name, children } = this.props;
 
     if ('render' in this.props) {
-      const componentProps = this.componentProps(name, children);
-      return this.props.render(componentProps);
+      const renderProps = this.renderProps(name, children);
+      return this.props.render(renderProps);
     }
 
     if (! ('component' in this.props)) {
       throw new Error('formage: must include render or component prop')
     }
-
-    const { component, disabled, type } = this.props;
-    const extra: any = { disabled, type };
-    if (props.type === 'checkbox' || props.type === 'radio') {
-      extra.checked = this.context.bag.values[name];
-    }
-
-    return React.createElement(component as any, {
-      ...props,
-      ...extra,
+    
+    const componentProps: any = {
+      ...this.props,
       onChange: this.onChange,
       onBlur: this.onBlur,
-      children,
 
       // Without the '', if the key does not exist, react warns about
       // uncontrolled components:
       value: this.context.bag.values[name] || '',
-    });
+    };
+
+    const { component } = this.props;
+    if (this.props.type === 'checkbox' || this.props.type === 'radio') {
+      componentProps.checked = this.context.bag.values[name];
+    }
+
+    return React.createElement(component as any, componentProps);
   }
+}
+
+export type LabelledFieldProps<TValues=any> = Styleable & FieldBaseProps<TValues> & {
+  readonly label: string;
+  readonly errorComponent?: React.ComponentType<FieldErrorComponentProps<TValues>>;
+  readonly hideErrorIfEmpty?: boolean;
+  readonly errorClassName?: string;
+};
+
+export function LabelledField<TValues>(props: LabelledFieldProps<TValues>) {
+  const { errorClassName, errorComponent, hideErrorIfEmpty, label, ...rest } = props;
+
+  return (
+    <div className={props.className} style={props.style}>
+      <label>{label}</label>
+      <Field<TValues> {...rest} />
+      <FieldError<TValues>
+        name={props.name}
+        className={errorClassName}
+        component={errorComponent}
+        hideIfEmpty={hideErrorIfEmpty}
+      />
+    </div>
+  );
 }
 
 function touchAll(errors: any, touched: any): any {

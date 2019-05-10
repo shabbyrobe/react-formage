@@ -1,5 +1,5 @@
-const webpack = require('webpack');
-const path = require('path');
+const webpack = require("webpack");
+const path = require("path");
 
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
@@ -10,8 +10,14 @@ const lp = (...p) => path.join(path.resolve(__dirname), ...p);
 module.exports = {
   entry: "./src/index.tsx",
   output: {
-    filename: "bundle.js",
+    filename: "[name].[contenthash].js",
     path: lp("build"),
+  },
+
+  optimization: {
+    splitChunks: {
+      chunks: "all",
+    },
   },
 
   devServer: {
@@ -38,7 +44,7 @@ module.exports = {
 
   plugins: [
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(mode),
+      "process.env.NODE_ENV": JSON.stringify(mode),
     }),
     new HtmlWebpackPlugin({
       inject: true,

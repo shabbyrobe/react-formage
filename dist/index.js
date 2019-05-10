@@ -139,25 +139,25 @@ SubForm.defaultProps = {
 SubForm.contextType = FormContext;
 export class FieldError extends React.Component {
     render() {
-        const _a = this.props, { component, name } = _a, props = __rest(_a, ["component", "name"]);
+        const _a = this.props, { component, hideIfEmpty, name } = _a, props = __rest(_a, ["component", "hideIfEmpty", "name"]);
         const touched = !!this.context.bag.touched[name];
-        const message = this.context.bag.errors[name];
-        if (!touched || !message) {
-            return null;
-        }
+        const message = (touched && this.context.bag.errors[name]) || '';
         if (typeof message !== 'string') {
             throw new Error(); // FIXME: improve error
+        }
+        if (!message && hideIfEmpty) {
+            return null;
         }
         if (component) {
             return React.createElement(component, { touched, message: message });
         }
         else {
-            return React.createElement("div", Object.assign({}, props), message);
+            return React.createElement('div', props, message);
         }
     }
 }
 FieldError.contextType = FormContext;
-export class Field extends React.Component {
+export class Field extends React.PureComponent {
     constructor() {
         super(...arguments);
         this.onChange = (e) => {
@@ -174,7 +174,7 @@ export class Field extends React.Component {
         }
         return target.value;
     }
-    componentProps(name, children) {
+    renderProps(name, children) {
         return {
             value: this.context.bag.values[name],
             change: (value) => this.context.handleChange(this.props.name, value),
@@ -185,29 +185,36 @@ export class Field extends React.Component {
         };
     }
     render() {
-        const _a = this.props, { name, children } = _a, props = __rest(_a, ["name", "children"]);
+        const { name, children } = this.props;
         if ('render' in this.props) {
-            const componentProps = this.componentProps(name, children);
-            return this.props.render(componentProps);
+            const renderProps = this.renderProps(name, children);
+            return this.props.render(renderProps);
         }
         if (!('component' in this.props)) {
             throw new Error('formage: must include render or component prop');
         }
-        const { component, disabled, type } = this.props;
-        const extra = { disabled, type };
-        if (props.type === 'checkbox' || props.type === 'radio') {
-            extra.checked = this.context.bag.values[name];
-        }
-        return React.createElement(component, Object.assign({}, props, extra, { onChange: this.onChange, onBlur: this.onBlur, children, 
+        const componentProps = Object.assign({}, this.props, { onChange: this.onChange, onBlur: this.onBlur, 
             // Without the '', if the key does not exist, react warns about
             // uncontrolled components:
-            value: this.context.bag.values[name] || '' }));
+            value: this.context.bag.values[name] || '' });
+        const { component } = this.props;
+        if (this.props.type === 'checkbox' || this.props.type === 'radio') {
+            componentProps.checked = this.context.bag.values[name];
+        }
+        return React.createElement(component, componentProps);
     }
 }
 Field.contextType = FormContext;
 Field.defaultProps = {
     component: 'input',
 };
+export function LabelledField(props) {
+    const { errorClassName, errorComponent, hideErrorIfEmpty, label } = props, rest = __rest(props, ["errorClassName", "errorComponent", "hideErrorIfEmpty", "label"]);
+    return (React.createElement("div", { className: props.className, style: props.style },
+        React.createElement("label", null, label),
+        React.createElement(Field, Object.assign({}, rest)),
+        React.createElement(FieldError, { name: props.name, className: errorClassName, component: errorComponent, hideIfEmpty: hideErrorIfEmpty })));
+}
 function touchAll(errors, touched) {
     if (!touched) {
         touched = {};

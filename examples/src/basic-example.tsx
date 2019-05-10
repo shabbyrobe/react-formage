@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Select from 'react-select';
 
-import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
+import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, LabelledField, validateFormBag } from 'react-formage';
 
 type Props = {};
 
@@ -89,14 +89,13 @@ export class BasicExample extends React.Component<Props, State> {
           <div>
             <label>Bar</label>
             <Field<Values> name="bar" />
+
+            {/* <FieldError> is basically just this: */}
             <div className="error">{touched.bar && errors.bar}</div>
           </div>
 
-          <div>
-            <label>Email</label>
-            <Field<Values> name="email" />
-            <FieldError<Values> name="email" className="error" />
-          </div>
+          {/* But we can simplify: */}
+          <LabelledField<Values> label="email" name="email" errorClassName="error" />
 
           <div>
             <label>Textarea</label>

@@ -54,7 +54,7 @@ declare type SubFormProps<TParentValues> = {
     readonly validateOnChange?: boolean;
     readonly validateOnBlur?: boolean;
 };
-export declare class SubForm<TParentValues extends object, TKey extends keyof TParentValues, TValues extends TParentValues[TKey]> extends React.Component<SubFormProps<TParentValues>> {
+export declare class SubForm<TParentValues extends object, TValues extends object> extends React.Component<SubFormProps<TParentValues>> {
     static defaultProps: Partial<SubFormProps<any>>;
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TParentValues>;
@@ -73,11 +73,22 @@ declare type FieldErrorProps<TValues = any> = Styleable & {
     readonly name: keyof TValues;
     /** Optional component to use instead of a <div> */
     readonly component?: React.ComponentType<FieldErrorComponentProps<TValues>>;
+    /** By default, FieldError is rendered even if there is no message so you can
+      * set a fixed height and expect your layout to be preserved. Set this to true
+      * if you don't want an element in the DOM even if there is no message. */
+    readonly hideIfEmpty?: boolean;
 };
 export declare class FieldError<TValues = object> extends React.Component<FieldErrorProps<TValues>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
-    render(): JSX.Element | null;
+    render(): React.ReactElement<React.PropsWithChildren<{
+        readonly touched: boolean;
+        readonly message: string;
+    }>, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | React.DetailedReactHTMLElement<{
+        className?: string | undefined;
+        style?: React.CSSProperties | undefined;
+        children?: React.ReactNode;
+    }, HTMLElement> | null;
 }
 declare type Styleable = {
     /** 'className' is ignored if 'component' is used */
@@ -85,12 +96,13 @@ declare type Styleable = {
     /** 'style' is ignored if 'component' is used */
     readonly style?: React.CSSProperties;
 };
-declare type FieldProps<TValues = any> = Styleable & FieldRenderProps<TValues> & {
+declare type FieldBaseProps<TValues = any> = FieldRenderProps<TValues> & {
     readonly name: keyof TValues;
     /** If component is set to 'input', 'type' is used for the input type, i.e.
      *  'checkbox', 'radio', etc. */
     readonly type?: 'text' | 'number' | 'radio' | 'checkbox' | string;
 };
+declare type FieldProps<TValues = any> = Styleable & FieldBaseProps<TValues>;
 declare type FieldRenderProps<TValues> = {
     readonly render: ((props: FieldComponentProps<TValues>) => React.ReactNode);
 } | {
@@ -104,14 +116,21 @@ export declare type FieldComponentProps<TValues = any, TValue = any> = React.Pro
     readonly setFieldValue: (name: keyof TValues, value: TValue, shouldValidate: boolean) => FormBag<TValues>;
     readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
-export declare class Field<TValues = object> extends React.Component<FieldProps<TValues>> {
+export declare class Field<TValues = object> extends React.PureComponent<FieldProps<TValues>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
     static defaultProps: Partial<FieldProps<any>>;
     private onChange;
     private onBlur;
     private extractValue;
-    private componentProps;
+    private renderProps;
     render(): React.ReactNode;
 }
+export declare type LabelledFieldProps<TValues = any> = Styleable & FieldBaseProps<TValues> & {
+    readonly label: string;
+    readonly errorComponent?: React.ComponentType<FieldErrorComponentProps<TValues>>;
+    readonly hideErrorIfEmpty?: boolean;
+    readonly errorClassName?: string;
+};
+export declare function LabelledField<TValues>(props: LabelledFieldProps<TValues>): JSX.Element;
 export {};
