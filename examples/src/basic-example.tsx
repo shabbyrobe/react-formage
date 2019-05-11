@@ -9,7 +9,7 @@ type Values = {
   readonly foo: string;
   readonly bar: string;
   readonly email: string;
-  readonly textarea: string;
+  readonly multiline: string;
   readonly check: boolean;
   readonly reactSelect: string;
   readonly normalSelect: string;
@@ -29,7 +29,7 @@ export class BasicExample extends React.Component<Props, State> {
         foo: 'yeps',
         bar: 'yeppo',
         email: '',
-        textarea: 'yeppers',
+        multiline: 'yeppers',
         check: false,
         reactSelect: 'pants',
         normalSelect: 'one',
@@ -54,7 +54,7 @@ export class BasicExample extends React.Component<Props, State> {
   private validate = (values: Values): FormErrors<Values> => {
     const errors: FormErrors<Values> = {};
 
-    const required: Array<keyof Values> = ['bar', 'textarea', 'reactSelect'];
+    const required: Array<keyof Values> = ['bar', 'multiline', 'reactSelect'];
     for (const key of required) {
       if (!values[key]) {
         errors[key] = 'Value is required';
@@ -64,7 +64,7 @@ export class BasicExample extends React.Component<Props, State> {
       errors.email = 'Email invalid';
     }
     if (values.foo !== 'yep') {
-      errors.foo = 'Foo must be "yep"';
+      errors.foo = 'Foo must contain the string "yep"';
     }
     if (!reactSelectOptions.find((v) => v.value === values.reactSelect)) {
       errors.reactSelect = 'Invalid value';
@@ -82,36 +82,36 @@ export class BasicExample extends React.Component<Props, State> {
 
           <div>
             <label>Foo</label>
-            <Field<Values> name="foo" />
-            <FieldError<Values> name="foo" className="error" />
+            <Field<Values, 'foo'> name='foo' />
+            <FieldError<Values> name='foo' className='error' />
           </div>
 
           <div>
             <label>Bar</label>
-            <Field<Values> name="bar" />
+            <Field<Values, 'bar'> name='bar' />
 
             {/* <FieldError> is basically just this: */}
-            <div className="error">{touched.bar && errors.bar}</div>
+            <div className='error'>{touched.bar && errors.bar}</div>
           </div>
 
-          {/* But we can simplify: */}
-          <LabelledField<Values> label="email" name="email" errorClassName="error" />
+          {/* But we can simplify further: */}
+          <LabelledField<Values, 'email'> label='Email' name='email' errorClassName='error' />
 
           <div>
-            <label>Textarea</label>
-            <Field<Values> component="textarea" name="textarea" />
-            <div className="error">{touched.textarea && errors.textarea}</div>
+            <label>Multi-Line with textarea</label>
+            <Field<Values, 'multiline'> name='multiline' component='textarea' />
+            <FieldError<Values> name='multiline' className='error' />
           </div>
 
           <div>
             <label>Check</label>
-            <Field<Values> type="checkbox" name="check" />
-            <div className="error">{touched.check && errors.check}</div>
+            <Field<Values> type='checkbox' name='check' />
+            <div className='error'>{touched.check && errors.check}</div>
           </div>
 
           <div>
             <label>React Select</label>
-            <Field<Values> name="reactSelect" render={(props) => (
+            <Field<Values, 'reactSelect'> name='reactSelect' render={(props) => (
               <Select 
                 options={reactSelectOptions}
                 value={{ label: props.value, value: props.value }}
@@ -119,26 +119,19 @@ export class BasicExample extends React.Component<Props, State> {
                 onBlur={() => props.blur()}
               />
             )}/>
-            <div className="error">{touched.reactSelect && errors.reactSelect}</div>
+            <div className='error'>{touched.reactSelect && errors.reactSelect}</div>
           </div>
 
-          <div>
-            <label>Normal Select</label>
-            <Field<Values> component="select" name="normalSelect">
-              <option>one</option>
-              <option>two</option>
-              <option>three</option>
-            </Field>
-            <FieldError<Values> name="normalSelect" className="error" />
-          </div>
+          <LabelledField<Values, 'normalSelect'> name='normalSelect' label='Normal Select' component='select' errorClassName='error'>
+            <option>one</option>
+            <option>two</option>
+            <option>three</option>
+          </LabelledField>
 
-          <div>
-            <label>Foo again for some reason</label>
-            <Field<Values> name="foo" />
-            <div className="error">{touched.foo && errors.foo}</div>
-          </div>
+          <LabelledField<Values, 'foo'> label='Foo again for some reason' name='foo' errorClassName='error' />
 
-          {/* This used to set 'disabled={!this.state.bag.valid}', but that prevents submit from triggering validation of untouched fields */}
+          {/* This used to set 'disabled={!this.state.bag.valid}', but that prevents 
+              submit from triggering validation of untouched fields */}
           <button onClick={this.onSubmit}>SUBMIT</button>
 
           <div style={{ margin: '30px 0px' }}>

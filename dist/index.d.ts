@@ -9,10 +9,10 @@ export declare type FormUpdateEvent<TValues> = {
     readonly name: keyof TValues;
 };
 export declare type FormErrors<TValues, TKey = keyof TValues> = {
-    -readonly [TKey in keyof TValues]?: TValues[TKey] extends object ? FormErrors<TValues[TKey], TKey> : string;
+    -readonly [TKey in keyof TValues]?: FormErrors<TValues[TKey], TKey> | string;
 };
 export declare type FormTouched<TValues, TKey = keyof TValues> = {
-    -readonly [TKey in keyof TValues]?: TValues[TKey] extends object ? FormTouched<TValues[TKey], TKey> : boolean;
+    -readonly [TKey in keyof TValues]?: FormTouched<TValues[TKey], TKey> | boolean;
 };
 export declare type FormBag<TValues> = {
     readonly errors: FormErrors<TValues>;
@@ -49,13 +49,13 @@ export declare class FormData<TValues extends object> extends React.Component<Fo
     private handleBlur;
     render(): JSX.Element;
 }
-declare type SubFormProps<TParentValues> = {
-    readonly name: keyof TParentValues;
+declare type SubFormProps<TParentValues, TKey> = {
+    readonly name: TKey;
     readonly validateOnChange?: boolean;
     readonly validateOnBlur?: boolean;
 };
-export declare class SubForm<TParentValues extends object, TValues extends object> extends React.Component<SubFormProps<TParentValues>> {
-    static defaultProps: Partial<SubFormProps<any>>;
+export declare class SubForm<TParentValues = any, TKey extends keyof TParentValues = any, TValues extends TParentValues[TKey] = TParentValues[TKey]> extends React.Component<SubFormProps<TParentValues, TKey>> {
+    static defaultProps: Partial<SubFormProps<any, any>>;
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TParentValues>;
     updateBag: (values: TValues, touched: FormTouched<TValues, keyof TValues>, shouldValidate: boolean) => FormBag<TValues>;
@@ -65,11 +65,11 @@ export declare class SubForm<TParentValues extends object, TValues extends objec
     private handleBlur;
     render(): JSX.Element;
 }
-export declare type FieldErrorComponentProps<TValues = any> = React.PropsWithChildren<{
+export declare type FieldErrorComponentProps<TValues> = React.PropsWithChildren<{
     readonly touched: boolean;
     readonly message: string;
 }>;
-declare type FieldErrorProps<TValues = any> = Styleable & {
+declare type FieldErrorProps<TValues> = Styleable & {
     readonly name: keyof TValues;
     /** Optional component to use instead of a <div> */
     readonly component?: React.ComponentType<FieldErrorComponentProps<TValues>>;
@@ -78,7 +78,7 @@ declare type FieldErrorProps<TValues = any> = Styleable & {
       * if you don't want an element in the DOM even if there is no message. */
     readonly hideIfEmpty?: boolean;
 };
-export declare class FieldError<TValues = object> extends React.Component<FieldErrorProps<TValues>> {
+export declare class FieldError<TValues = any> extends React.Component<FieldErrorProps<TValues>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
     render(): React.ReactElement<React.PropsWithChildren<{
@@ -96,41 +96,41 @@ declare type Styleable = {
     /** 'style' is ignored if 'component' is used */
     readonly style?: React.CSSProperties;
 };
-declare type FieldBaseProps<TValues = any> = FieldRenderProps<TValues> & {
-    readonly name: keyof TValues;
+declare type FieldBaseProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> = FieldRenderProps<TValues, TValue> & {
+    readonly name: TKey;
     /** If component is set to 'input', 'type' is used for the input type, i.e.
      *  'checkbox', 'radio', etc. */
     readonly type?: 'text' | 'number' | 'radio' | 'checkbox' | string;
 };
-declare type FieldProps<TValues = any> = Styleable & FieldBaseProps<TValues>;
-declare type FieldRenderProps<TValues> = {
-    readonly render: ((props: FieldComponentProps<TValues>) => React.ReactNode);
+declare type FieldRenderProps<TValues, TValue> = {
+    readonly render: ((props: FieldComponentProps<TValues, TValue>) => React.ReactNode);
 } | {
     readonly component?: 'input' | 'textarea' | 'select';
     readonly disabled?: boolean;
 };
-export declare type FieldComponentProps<TValues = any, TValue = any> = React.PropsWithChildren<{
+declare type FieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> = Styleable & FieldBaseProps<TValues, TKey, TValue>;
+export declare type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
     readonly value: TValue;
     readonly change: (value: TValue) => void;
     readonly blur: () => void;
     readonly setFieldValue: (name: keyof TValues, value: TValue, shouldValidate: boolean) => FormBag<TValues>;
     readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
-export declare class Field<TValues = object> extends React.PureComponent<FieldProps<TValues>> {
+export declare class Field<TValues = any, TKey extends keyof TValues = any, TValue extends TValues[TKey] = TValues[TKey]> extends React.Component<FieldProps<TValues, TKey, TValue>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
-    static defaultProps: Partial<FieldProps<any>>;
+    static defaultProps: Partial<FieldProps<any, any, any>>;
     private onChange;
     private onBlur;
     private extractValue;
     private renderProps;
     render(): React.ReactNode;
 }
-export declare type LabelledFieldProps<TValues = any> = Styleable & FieldBaseProps<TValues> & {
+export declare type LabelledFieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> = Styleable & FieldBaseProps<TValues, TKey, TValue> & React.PropsWithChildren<{
     readonly label: string;
     readonly errorComponent?: React.ComponentType<FieldErrorComponentProps<TValues>>;
     readonly hideErrorIfEmpty?: boolean;
     readonly errorClassName?: string;
-};
-export declare function LabelledField<TValues>(props: LabelledFieldProps<TValues>): JSX.Element;
+}>;
+export declare function LabelledField<TValues = any, TKey extends keyof TValues = any, TValue extends TValues[TKey] = TValues[TKey]>(props: LabelledFieldProps<TValues, TKey, TValue>): JSX.Element;
 export {};

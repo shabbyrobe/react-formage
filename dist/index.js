@@ -157,7 +157,7 @@ export class FieldError extends React.Component {
     }
 }
 FieldError.contextType = FormContext;
-export class Field extends React.PureComponent {
+export class Field extends React.Component {
     constructor() {
         super(...arguments);
         this.onChange = (e) => {

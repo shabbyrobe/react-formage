@@ -5,6 +5,11 @@ import * as formage from 'react-formage';
 type BaseValues = {
   readonly foo: string;
   readonly bar: string;
+
+  // Included to make sure the typing doesn't inhibit an object to be treated
+  // as a single field:
+  readonly objField: { value: string };
+
   readonly child: ChildValues;
 };
 
@@ -43,6 +48,11 @@ const validateBaseForm = (values: BaseValues): formage.FormErrors<BaseValues> =>
   const errors: formage.FormErrors<BaseValues> = {};
   if (!values.foo.trim()) { errors.foo = 'foo is required'; }
   if (!values.bar.trim()) { errors.bar = 'bar is required'; }
+
+  if (!values.objField.value.trim()) {
+    errors.objField = 'objField is required';
+  }
+
   errors.child = validateChildForm(values.child);
   return errors;
 };
@@ -54,7 +64,7 @@ const MoreForm = () => <>
 const ChildForm = () => <>
   <formage.LabelledField<ChildValues> label="Baz" name="baz" errorClassName="error" />
   <formage.LabelledField<ChildValues> label="Qux" name="qux" errorClassName="error" />
-  <formage.SubForm<ChildValues, MoreValues> name="more">
+  <formage.SubForm<ChildValues, "more"> name="more">
     <MoreForm />
   </formage.SubForm>
 </>;
@@ -62,10 +72,23 @@ const ChildForm = () => <>
 const BaseForm = () => <>
   <formage.LabelledField<BaseValues> label="Foo" name="foo" errorClassName="error" />
   <formage.LabelledField<BaseValues> label="Bar" name="bar" errorClassName="error" />
-  <formage.SubForm<BaseValues, ChildValues> name="child">
+
+  <formage.LabelledField<BaseValues, 'objField'>
+    label="ObjField"
+    name="objField"
+    errorClassName="error"
+    render={(props) => (
+      <input value={props.value.value} onBlur={props.blur}
+        onChange={(e) => props.change({ value: e.target.value })}
+      />
+    )}
+  />
+
+  <formage.SubForm<BaseValues, "child"> name="child">
     <ChildForm />
   </formage.SubForm>
 </>;
+
 
 export class NestedReuseExample extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -73,6 +96,7 @@ export class NestedReuseExample extends React.Component<Props, State> {
     this.state = {
       bag: formage.createFormBag({
         foo: '', bar: '',
+        objField: { value: '' },
         child: {
           baz: '',
           qux: '',

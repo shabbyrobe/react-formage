@@ -16,17 +16,20 @@ export type FormUpdateEvent<TValues> = {
 
 
 export type FormErrors<TValues, TKey = keyof TValues> = {
-  -readonly [TKey in keyof TValues]?: 
-    TValues[TKey] extends object ?
-      FormErrors<TValues[TKey], TKey> :
-      string
+  // This used to be a clever conditional type, switching to a nested
+  // FormErrors if the equivalent key in TValues was an object, but this
+  // presumes that fields only emit primitives, which is not the case
+  // for something like react-select. Anything could emit anything and
+  // we can't tell here whether that's a subform or simply a value.
+  -readonly [TKey in keyof TValues]?:
+    FormErrors<TValues[TKey], TKey> |
+    string
 };
 
 export type FormTouched<TValues, TKey = keyof TValues> = {
   -readonly [TKey in keyof TValues]?: 
-    TValues[TKey] extends object ?
-      FormTouched<TValues[TKey], TKey> :
-      boolean
+    FormTouched<TValues[TKey], TKey> |
+    boolean
 };
 
 
@@ -143,18 +146,19 @@ export class FormData<TValues extends object> extends React.Component<FormProps<
   }
 }
 
-type SubFormProps<TParentValues> = {
-  readonly name: keyof TParentValues;
+type SubFormProps<TParentValues, TKey> = {
+  readonly name: TKey;
   readonly validateOnChange?: boolean;
   readonly validateOnBlur?: boolean;
 };
 
 export class SubForm<
-  TParentValues extends object,
-  TValues extends object,
-> extends React.Component<SubFormProps<TParentValues>> {
+  TParentValues = any,
+  TKey extends keyof TParentValues = any,
+  TValues extends TParentValues[TKey] = TParentValues[TKey],
+> extends React.Component<SubFormProps<TParentValues, TKey>> {
 
-  public static defaultProps: Partial<SubFormProps<any>> = {
+  public static defaultProps: Partial<SubFormProps<any, any>> = {
     validateOnChange: true,
     validateOnBlur: true,
   };
@@ -171,8 +175,8 @@ export class SubForm<
 
     return {
       valid: updated.valid,
-      errors: updated.errors[this.props.name] as any,
-      touched: updated.touched[this.props.name] as any,
+      errors: updated.errors[this.props.name],
+      touched: updated.touched[this.props.name],
       values: updated.values[this.props.name],
     } as any;
   }
@@ -219,12 +223,12 @@ export class SubForm<
 }
 
 // FieldErrorComponentProps are passed in to the component rendered by a FieldError.
-export type FieldErrorComponentProps<TValues=any> = React.PropsWithChildren<{
+export type FieldErrorComponentProps<TValues> = React.PropsWithChildren<{
   readonly touched: boolean;
   readonly message: string;
 }>;
 
-type FieldErrorProps<TValues=any> = Styleable & {
+type FieldErrorProps<TValues> = Styleable & {
   readonly name: keyof TValues;
 
   /** Optional component to use instead of a <div> */
@@ -236,7 +240,7 @@ type FieldErrorProps<TValues=any> = Styleable & {
   readonly hideIfEmpty?: boolean;
 };
 
-export class FieldError<TValues=object> extends React.Component<FieldErrorProps<TValues>> {
+export class FieldError<TValues=any> extends React.Component<FieldErrorProps<TValues>> {
   public static contextType: React.Context<FormContextDef> = FormContext;
   public context!: FormContextDef<TValues>;
 
@@ -269,25 +273,28 @@ type Styleable = {
 };
 
 // FieldBaseProps is needed so we can derive without styling.
-type FieldBaseProps<TValues=any> = FieldRenderProps<TValues> & {
-  readonly name: keyof TValues;
+type FieldBaseProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> =
+  FieldRenderProps<TValues, TValue> &
+  {
+    readonly name: TKey;
 
-  /** If component is set to 'input', 'type' is used for the input type, i.e.
-   *  'checkbox', 'radio', etc. */
-  readonly type?: 'text' | 'number' | 'radio' | 'checkbox' | string;
-};
+    /** If component is set to 'input', 'type' is used for the input type, i.e.
+     *  'checkbox', 'radio', etc. */
+    readonly type?: 'text' | 'number' | 'radio' | 'checkbox' | string;
+  };
 
-type FieldProps<TValues=any> = Styleable & FieldBaseProps<TValues>;
-
-type FieldRenderProps<TValues> = 
-  { readonly render: ((props: FieldComponentProps<TValues>) => React.ReactNode) } |
+type FieldRenderProps<TValues, TValue> = 
+  { readonly render: ((props: FieldComponentProps<TValues, TValue>) => React.ReactNode) } |
   {
     readonly component?: 'input' | 'textarea' | 'select';
     readonly disabled?: boolean;
   }
 ;
 
-export type FieldComponentProps<TValues=any, TValue=any> = React.PropsWithChildren<{
+type FieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> =
+  Styleable & FieldBaseProps<TValues, TKey, TValue>;
+
+export type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
   readonly value: TValue;
   readonly change: (value: TValue) => void;
   readonly blur: () => void;
@@ -295,11 +302,14 @@ export type FieldComponentProps<TValues=any, TValue=any> = React.PropsWithChildr
   readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
 
-export class Field<TValues=object> extends React.PureComponent<FieldProps<TValues>> {
+
+export class Field<TValues=any, TKey extends keyof TValues=any, TValue extends TValues[TKey]=TValues[TKey]>
+  extends React.Component<FieldProps<TValues, TKey, TValue>> {
+
   public static contextType: React.Context<FormContextDef> = FormContext;
   public context!: FormContextDef<TValues>;
 
-  public static defaultProps: Partial<FieldProps<any>> = {
+  public static defaultProps: Partial<FieldProps<any, any, any>> = {
     component: 'input',
   };
 
@@ -319,10 +329,10 @@ export class Field<TValues=object> extends React.PureComponent<FieldProps<TValue
     return target.value;
   }
 
-  private renderProps(name: keyof TValues, children?: React.ReactNode): FieldComponentProps<TValues> {
+  private renderProps(name: keyof TValues, children?: React.ReactNode): FieldComponentProps<TValues, TValues[typeof name]> {
     return {
       value: this.context.bag.values[name],
-      change: (value: any) => this.context.handleChange(this.props.name, value),
+      change: (value: TValues[typeof name]) => this.context.handleChange(this.props.name, value),
       blur: () => this.context.handleBlur(this.props.name),
       setFieldValue: this.context.setFieldValue,
       setFieldTouched: this.context.setFieldTouched,
@@ -335,7 +345,7 @@ export class Field<TValues=object> extends React.PureComponent<FieldProps<TValue
 
     if ('render' in this.props) {
       const renderProps = this.renderProps(name, children);
-      return this.props.render(renderProps);
+      return this.props.render(renderProps as any);
     }
 
     if (! ('component' in this.props)) {
@@ -361,20 +371,31 @@ export class Field<TValues=object> extends React.PureComponent<FieldProps<TValue
   }
 }
 
-export type LabelledFieldProps<TValues=any> = Styleable & FieldBaseProps<TValues> & {
+
+export type LabelledFieldProps<
+  TValues,
+  TKey extends keyof TValues,
+  TValue extends TValues[TKey],
+> = Styleable & FieldBaseProps<TValues, TKey, TValue> & React.PropsWithChildren<{
+
   readonly label: string;
   readonly errorComponent?: React.ComponentType<FieldErrorComponentProps<TValues>>;
   readonly hideErrorIfEmpty?: boolean;
   readonly errorClassName?: string;
-};
+}>;
 
-export function LabelledField<TValues>(props: LabelledFieldProps<TValues>) {
+export function LabelledField<
+  TValues = any,
+  TKey extends keyof TValues = any,
+  TValue extends TValues[TKey] = TValues[TKey],
+>(props: LabelledFieldProps<TValues, TKey, TValue>) {
+
   const { errorClassName, errorComponent, hideErrorIfEmpty, label, ...rest } = props;
 
   return (
     <div className={props.className} style={props.style}>
       <label>{label}</label>
-      <Field<TValues> {...rest} />
+      <Field<TValues, TKey, TValue> {...rest} />
       <FieldError<TValues>
         name={props.name}
         className={errorClassName}

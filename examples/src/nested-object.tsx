@@ -83,7 +83,7 @@ export class NestedObjectExample extends React.Component<Props, State> {
           </div>
 
           <label>Child Values</label>
-          <SubForm name="childValues">
+          <SubForm<Values, "childValues"> name="childValues">
             <div>
               <label>Baz</label>
               <Field<ChildValues> name="baz" />
