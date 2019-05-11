@@ -24,6 +24,7 @@ module.exports = {
     contentBase: lp("build"),
     compress: true,
     port: 9002,
+    historyApiFallback: { index: "index.html" },
   },
 
   watchOptions: {

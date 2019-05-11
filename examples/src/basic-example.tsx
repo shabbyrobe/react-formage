@@ -11,15 +11,12 @@ type Values = {
   readonly email: string;
   readonly multiline: string;
   readonly check: boolean;
-  readonly reactSelect: string;
   readonly normalSelect: string;
 };
 
 type State = {
   readonly bag: FormBag<Values>;
 };
-
-const reactSelectOptions = ['a', 'b', 'c'].map((v) => ({ value: v, label: v }));
 
 export class BasicExample extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -31,7 +28,6 @@ export class BasicExample extends React.Component<Props, State> {
         email: '',
         multiline: 'yeppers',
         check: false,
-        reactSelect: 'pants',
         normalSelect: 'one',
       }),
     };
@@ -54,7 +50,7 @@ export class BasicExample extends React.Component<Props, State> {
   private validate = (values: Values): FormErrors<Values> => {
     const errors: FormErrors<Values> = {};
 
-    const required: Array<keyof Values> = ['bar', 'multiline', 'reactSelect'];
+    const required: Array<keyof Values> = ['bar', 'multiline'];
     for (const key of required) {
       if (!values[key]) {
         errors[key] = 'Value is required';
@@ -66,9 +62,6 @@ export class BasicExample extends React.Component<Props, State> {
     if (values.foo !== 'yep') {
       errors.foo = 'Foo must contain the string "yep"';
     }
-    if (!reactSelectOptions.find((v) => v.value === values.reactSelect)) {
-      errors.reactSelect = 'Invalid value';
-    }
     return errors;
   };
 
@@ -78,7 +71,7 @@ export class BasicExample extends React.Component<Props, State> {
     return (
       <form noValidate onSubmit={this.onSubmit}>
         <FormData bag={this.state.bag} onUpdate={this.onFormUpdate} validate={this.validate}>
-          <h1>Form Example</h1>
+          <h1>Basic Input Types</h1>
 
           <div>
             <label>Foo</label>
@@ -107,19 +100,6 @@ export class BasicExample extends React.Component<Props, State> {
             <label>Check</label>
             <Field<Values> type='checkbox' name='check' />
             <div className='error'>{touched.check && errors.check}</div>
-          </div>
-
-          <div>
-            <label>React Select</label>
-            <Field<Values, 'reactSelect'> name='reactSelect' render={(props) => (
-              <Select 
-                options={reactSelectOptions}
-                value={{ label: props.value, value: props.value }}
-                onChange={(e) => props.change((e as any).value)}
-                onBlur={() => props.blur()}
-              />
-            )}/>
-            <div className='error'>{touched.reactSelect && errors.reactSelect}</div>
           </div>
 
           <LabelledField<Values, 'normalSelect'> name='normalSelect' label='Normal Select' component='select' errorClassName='error'>
