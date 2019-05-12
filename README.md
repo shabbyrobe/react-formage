@@ -5,8 +5,13 @@ Inspired in no small part by [Formik](https://github.com/jaredpalmer/formik),
 this aims to distil the bits I was actually using in such a way as to grant the
 parent component 100% control over all meaningful state.
 
-This is a very early draft, but it's sitting at around the size I'd prefer it
-to stay.
+This is an early draft, but it's sitting at around the size I'd prefer it to
+stay.
+
+Formage is TypeScript-first. I don't use it or test it using vanilla JS, but
+will make any modification necessary to improve the experience for vanilla JS
+use-cases as long as it doesn't detract from the TypeScript experience.
+
 
 Similarities to Formik:
 
@@ -35,10 +40,12 @@ Differences from Formik:
 - Validation happens in one place and one place only, for everything. There's
   no schema (unless you want to integrate one yourself), no presumption of any
   schema, you write some simple imperative code and that's it.
-- No HOCs (please god, no HOCs)
 
 TODO:
 
+- Decide on whether `valid` should remain in `bag` (there are some under-explored
+  corner cases here)
+- Test-drive and assess current assumptions about `shouldValidate`
 - Publish to NPM
 
 
@@ -84,7 +91,7 @@ they're serviceable. Run `npm run localdemo` to run them in a local web server.
 ```typescript
 import * as React from 'react';
 
-import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
+import { createFormBag, FormBag, FormData, FormErrors, LabelledField, validateFormBag } from 'react-formage';
 
 type Values = {
   readonly foo: string;
@@ -120,7 +127,7 @@ export class BasicExample extends React.Component<{}, State> {
 
   private validate = (values: Values): FormErrors<Values> => {
     const errors: FormErrors<Values> = {};
-    const required: Array<keyof Values> = ['foo', 'bar'];
+    const required: ReadonlyArray<keyof Values> = ['foo', 'bar'];
     for (const key of required) {
       if (!values[key]) {
         errors[key] = 'Value is required';
@@ -135,18 +142,9 @@ export class BasicExample extends React.Component<{}, State> {
     return (
       <form noValidate onSubmit={this.onSubmit}>
         <FormData bag={this.state.bag} onUpdate={(e) => this.setState({ bag: e.bag })} validate={this.validate}>
-          <div>
-            <label>Foo</label>
-            <Field<Values> name="foo" />
-            <FieldError<Values> name="foo" className="error" />
-          </div>
-  
-          <div>
-            <label>Bar</label>
-            <Field<Values> name="bar" />
-            <div className="error">{touched.bar && errors.bar}</div>
-          </div>
-  
+          <LabelledField<Values, "foo"> name="foo" errorClassName="error" />
+          <LabelledField<Values, "bar"> name="bar" errorClassName="error" />
+
           <button onClick={this.onSubmit}>Submit</button>
         </FormData>
       </form>

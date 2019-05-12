@@ -98,8 +98,8 @@ export class BasicExample extends React.Component<Props, State> {
 
           <div>
             <label>Check</label>
-            <Field<Values> type='checkbox' name='check' />
-            <div className='error'>{touched.check && errors.check}</div>
+            <Field<Values, 'check'> type='checkbox' name='check' />
+            <FieldError<Values> name='check' className='error' />
           </div>
 
           <LabelledField<Values, 'normalSelect'> name='normalSelect' label='Normal Select' component='select' errorClassName='error'>

@@ -108,10 +108,10 @@ export class AsyncValidationExample extends React.Component<Props, State> {
     return (
       <form noValidate onSubmit={this.onSubmit}>
         <FormData bag={this.state.bag} onUpdate={this.onFormUpdate} validate={this.validate}>
-          <h1>Form Example</h1>
+          <h1>Async Validation</h1>
 
           <div>
-            <label>Slow speed (ms)</label>
+            <label>Slow field validation speed (ms)</label>
             <Field<Values> name="slowSpeedMs" />
             <FieldError<Values> name="slowSpeedMs" className="error" />
           </div>

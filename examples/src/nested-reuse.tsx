@@ -1,119 +1,110 @@
 import * as React from 'react';
 
 import * as formage from 'react-formage';
+import { Field, FormData, LabelledField } from 'react-formage';
 
-type BaseValues = {
-  readonly foo: string;
-  readonly bar: string;
-
-  // Included to make sure the typing doesn't inhibit an object to be treated
-  // as a single field:
-  readonly objField: { value: string };
-
-  readonly child: ChildValues;
-};
-
-type ChildValues = {
-  readonly baz: string;
-  readonly qux: string;
-  readonly more: MoreValues;
-};
-
-type MoreValues = {
+type Level3Values = {
   readonly yep: string;
 };
+
+const initialLevel3: Level3Values = { yep: '' };
+
+const validateLevel3 = (values: Level3Values): formage.FormErrors<Level3Values> => {
+  const errors: formage.FormErrors<Level3Values> = {};
+  if (!values.yep.trim()) { errors.yep = 'yep is required'; }
+  return errors;
+};
+
+const Level3Form = () => <>
+  <LabelledField<Level3Values> label="Yep" name="yep" errorClassName="error" />
+</>;
+
+
+type Level2Values = {
+  readonly baz: string;
+  readonly qux: string;
+  readonly level3: Level3Values;
+};
+
+const initialLevel2: Level2Values = {
+  baz: '',
+  qux: '',
+  level3: initialLevel3,
+};
+
+const validateLevel2 = (values: Level2Values): formage.FormErrors<Level2Values> => {
+  const errors: formage.FormErrors<Level2Values> = {};
+  if (!values.baz.trim()) { errors.baz = 'baz is required'; }
+  if (!values.qux.trim()) { errors.qux = 'qux is required'; }
+  errors.level3 = validateLevel3(values.level3);
+  return errors;
+};
+
+const Level2Form = () => <>
+  <LabelledField<Level2Values> label="Baz" name="baz" errorClassName="error" />
+  <LabelledField<Level2Values> label="Qux" name="qux" errorClassName="error" />
+  <Field<Level2Values, "level3"> name="level3" render={(props) => (
+    <FormData<Level3Values> bag={props.packBag({ yep: '' })} onUpdate={(e) => props.changeBag(e.bag) }>
+      <Level3Form />
+    </FormData>
+  )} />
+</>;
+
+
+type Level1Values = {
+  readonly foo: string;
+  readonly bar: string;
+  readonly level2: Level2Values;
+};
+
+const validateLevel1 = (values: Level1Values): formage.FormErrors<Level1Values> => {
+  const errors: formage.FormErrors<Level1Values> = {};
+  if (!values.foo.trim()) { errors.foo = 'foo is required'; }
+  if (!values.bar.trim()) { errors.bar = 'bar is required'; }
+
+  errors.level2 = validateLevel2(values.level2);
+  return errors;
+};
+
+const initialLevel1: Level1Values = {
+  foo: '', bar: '',
+  level2: initialLevel2,
+};
+
+const Level1Form = () => <>
+  <LabelledField<Level1Values> label="Foo" name="foo" errorClassName="error" />
+  <LabelledField<Level1Values> label="Bar" name="bar" errorClassName="error" />
+
+  <Field<Level1Values, "level2"> name="level2" render={(props) => (
+    <FormData<Level2Values> bag={props.packBag(initialLevel2)} onUpdate={(e) => props.changeBag(e.bag)}>
+      <Level2Form />
+    </FormData>
+  )} />
+</>;
 
 
 type Props = {};
 
 type State = {
-  readonly bag: formage.FormBag<BaseValues>;
+  readonly bag: formage.FormBag<Level1Values>;
 };
-
-const validateMoreForm = (values: MoreValues): formage.FormErrors<MoreValues> => {
-  const errors: formage.FormErrors<MoreValues> = {};
-  if (!values.yep.trim()) { errors.yep = 'yep is required'; }
-  return errors;
-};
-
-const validateChildForm = (values: ChildValues): formage.FormErrors<ChildValues> => {
-  const errors: formage.FormErrors<ChildValues> = {};
-  if (!values.baz.trim()) { errors.baz = 'baz is required'; }
-  if (!values.qux.trim()) { errors.qux = 'qux is required'; }
-  errors.more = validateMoreForm(values.more);
-  return errors;
-};
-
-const validateBaseForm = (values: BaseValues): formage.FormErrors<BaseValues> => {
-  const errors: formage.FormErrors<BaseValues> = {};
-  if (!values.foo.trim()) { errors.foo = 'foo is required'; }
-  if (!values.bar.trim()) { errors.bar = 'bar is required'; }
-
-  if (!values.objField.value.trim()) {
-    errors.objField = 'objField is required';
-  }
-
-  errors.child = validateChildForm(values.child);
-  return errors;
-};
-
-const MoreForm = () => <>
-  <formage.LabelledField<MoreValues> label="Yep" name="yep" errorClassName="error" />
-</>;
-
-const ChildForm = () => <>
-  <formage.LabelledField<ChildValues> label="Baz" name="baz" errorClassName="error" />
-  <formage.LabelledField<ChildValues> label="Qux" name="qux" errorClassName="error" />
-  <formage.SubForm<ChildValues, "more"> name="more">
-    <MoreForm />
-  </formage.SubForm>
-</>;
-
-const BaseForm = () => <>
-  <formage.LabelledField<BaseValues> label="Foo" name="foo" errorClassName="error" />
-  <formage.LabelledField<BaseValues> label="Bar" name="bar" errorClassName="error" />
-
-  <formage.LabelledField<BaseValues, 'objField'>
-    label="ObjField"
-    name="objField"
-    errorClassName="error"
-    render={(props) => (
-      <input value={props.value.value} onBlur={props.blur}
-        onChange={(e) => props.change({ value: e.target.value })}
-      />
-    )}
-  />
-
-  <formage.SubForm<BaseValues, "child"> name="child">
-    <ChildForm />
-  </formage.SubForm>
-</>;
-
 
 export class NestedReuseExample extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      bag: formage.createFormBag({
-        foo: '', bar: '',
-        objField: { value: '' },
-        child: {
-          baz: '',
-          qux: '',
-          more: { yep: '' },
-        },
-      }),
+      bag: formage.createFormBag(initialLevel1),
     };
   }
 
-  public onUpdate = (e: formage.FormUpdateEvent<BaseValues>) => {
+  public onUpdate = (e: formage.FormUpdateEvent<Level1Values>) => {
     this.setState({ bag: e.bag });
   };
 
   private onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const bag = formage.validateFormBag(this.state.bag, validateBaseForm);
+    const bag = formage.validateFormBag(this.state.bag, validateLevel1);
     this.setState({ bag });
     if (bag.valid) {
       alert('Submit OK!');
@@ -123,9 +114,9 @@ export class NestedReuseExample extends React.Component<Props, State> {
   public render() {
     return (
       <form noValidate onSubmit={this.onSubmit}>
-        <formage.FormData bag={this.state.bag} onUpdate={this.onUpdate} validate={validateBaseForm}>
-          <BaseForm />
-        </formage.FormData>
+        <FormData bag={this.state.bag} onUpdate={this.onUpdate} validate={validateLevel1}>
+          <Level1Form />
+        </FormData>
 
         <button onClick={this.onSubmit}>SUBMIT</button>
 

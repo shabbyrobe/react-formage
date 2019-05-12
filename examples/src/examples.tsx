@@ -4,11 +4,11 @@ import { AsyncValidationExample } from './async-validation';
 import { BasicExample } from './basic-example';
 import { LotsaInputsExample } from './lotsa-inputs';
 import { LotsaInputsFormikExample } from './lotsa-inputs-formik';
-import { NestedObjectExample } from './nested-object';
 import { NestedReuseExample } from './nested-reuse';
+import { NestedSubformExample } from './nested-subform';
 import { ReactSelectExample } from './react-select';
 
-const Container = (props: any) => (
+const Container = (props: React.PropsWithChildren<{}>) => (
   <div style={{
     padding: '8px',
     boxSizing: 'border-box',
@@ -22,7 +22,7 @@ const Container = (props: any) => (
   </div>
 );
 
-const Nav = (props: any) => (
+const Nav = (props: React.PropsWithChildren<{}>) => (
   <ul style={{ gridColumn: 'nav' }}>
     {props.children}
   </ul>
@@ -37,7 +37,7 @@ const NavLink = (props: any) => (
     }} {...props} />
 );
 
-const Body = (props: any) => {
+const Body = (props: React.PropsWithChildren<{}>) => {
   return (
     <div style={{ gridColumn: 'body' }}>
       {props.children}
@@ -61,8 +61,8 @@ const examples: ReadonlyArray<Example> = [
   { url: 'basic-input'         , name: 'Basic Input Types'     , component: () => <BasicExample /> }             ,
   { url: 'react-select'        , name: 'React Select'          , component: () => <ReactSelectExample /> }       ,
   { url: 'async-validation'    , name: 'Async Validation'      , component: () => <AsyncValidationExample /> }   ,
-  { url: 'nested-object'       , name: 'Nested Object'         , component: () => <NestedObjectExample /> }      ,
   { url: 'nested-reuse'        , name: 'Nested Reuse'          , component: () => <NestedReuseExample /> }       ,
+  { url: 'nested-subform'      , name: 'Nested Subform'        , component: () => <NestedSubformExample /> }      ,
   { url: 'lotsa-inputs'        , name: 'Lotsa Inputs'          , component: () => <LotsaInputsExample /> }       ,
   { url: 'lotsa-inputs-formik' , name: 'Lotsa Inputs (Formik)' , component: () => <LotsaInputsFormikExample /> } ,
 ];

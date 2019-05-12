@@ -29,13 +29,15 @@ export function validateFormBag(bag, validator) {
         values: bag.values,
     };
 }
+const optionsNoValidate = { shouldValidate: false };
 /** FormData provides a context to one or more Field components, validates the
  *  field values and propagates updates to the parent component. */
 export class FormData extends React.Component {
     constructor() {
         super(...arguments);
-        this.updateBag = (values, touched, shouldValidate) => {
+        this.updateBag = (values, touched, options) => {
             const { bag } = this.props;
+            const shouldValidate = options ? !!options.shouldValidate : false;
             let errors = bag.errors;
             let valid = bag.valid;
             if (shouldValidate && this.props.validate) {
@@ -46,36 +48,67 @@ export class FormData extends React.Component {
             this.props.onUpdate({ name, bag: updated });
             return updated;
         };
+        this.handleChangeBag = (name, childBag, options) => {
+            const { bag } = this.props;
+            const shouldValidate = (options && options.shouldValidate) || true;
+            const values = Object.assign({}, bag.values, { [name]: childBag.values });
+            const touched = Object.assign({}, bag.touched, { [name]: childBag.touched });
+            let valid = bag.valid && childBag.valid;
+            let errors = Object.assign({}, bag.errors, { [name]: childBag.errors });
+            if (shouldValidate && this.props.validate) {
+                errors = this.props.validate(values);
+                valid = Object.keys(errors).length === 0;
+            }
+            const updated = { errors, touched, valid, values };
+            this.props.onUpdate({ name, bag: updated });
+            return updated;
+        };
         this.handleChange = (name, value) => {
-            this.setFieldValue(name, value, !!this.props.validateOnChange);
+            this.setFieldValue(name, value, { shouldValidate: !!this.props.validateOnChange });
         };
         this.handleBlur = (name) => {
             const { bag } = this.props;
             const { touched, values } = this.props.bag;
             const newTouched = Object.assign({}, touched, { [name]: true });
-            return this.updateBag(values, newTouched, !!this.props.validateOnBlur);
+            return this.updateBag(values, newTouched, { shouldValidate: !!this.props.validateOnBlur });
+        };
+        this.packBag = (name, initialValue) => {
+            const { bag } = this.props;
+            const childBag = {
+                errors: bag.errors[name] || {},
+                touched: bag.touched[name] || {},
+                values: bag.values[name] || initialValue,
+                // FIXME: valid may need to be removed from bag; there are too many corner cases
+                // around initial value
+                valid: bag.valid,
+            };
+            return childBag;
         };
     }
-    setFieldValue(name, value, shouldValidate) {
+    setFieldValue(name, value, options) {
         const { bag } = this.props;
         const newValues = Object.assign({}, bag.values, { [name]: value });
-        return this.updateBag(newValues, bag.touched, shouldValidate);
+        return this.updateBag(newValues, bag.touched, options);
     }
     setFieldTouched(name) {
         const { bag } = this.props;
         const newTouched = Object.assign({}, bag.touched, { [name]: true });
-        return this.updateBag(bag.values, newTouched, false);
+        return this.updateBag(bag.values, newTouched, optionsNoValidate);
     }
     render() {
-        const { handleBlur, handleChange, setFieldValue, setFieldTouched, updateBag } = this;
+        if (!this.props.bag) {
+            throw new Error('Missing bag prop in <FormData> component');
+        }
         const ctx = {
             bag: this.props.bag,
+            handleBlur: this.handleBlur,
+            handleChange: this.handleChange,
+            handleChangeBag: this.handleChangeBag,
+            packBag: this.packBag,
+            setFieldTouched: this.setFieldTouched,
+            setFieldValue: this.setFieldValue,
+            updateBag: this.updateBag,
             validate: this.props.validate,
-            handleBlur: handleBlur,
-            handleChange: handleChange,
-            setFieldValue,
-            setFieldTouched,
-            updateBag,
         };
         return React.createElement(FormContext.Provider, { value: ctx }, this.props.children);
     }
@@ -84,59 +117,6 @@ FormData.defaultProps = {
     validateOnChange: true,
     validateOnBlur: true,
 };
-export class SubForm extends React.Component {
-    constructor() {
-        super(...arguments);
-        this.updateBag = (values, touched, shouldValidate) => {
-            const updated = this.context.updateBag(Object.assign({}, this.context.bag.values, { [this.props.name]: values }), Object.assign({}, this.context.bag.touched, { [this.props.name]: touched }), shouldValidate);
-            return {
-                valid: updated.valid,
-                errors: updated.errors[this.props.name],
-                touched: updated.touched[this.props.name],
-                values: updated.values[this.props.name],
-            };
-        };
-        this.handleChange = (name, value) => {
-            this.setFieldValue(name, value, !!this.props.validateOnChange);
-        };
-        this.handleBlur = (name) => {
-            const touched = this.context.bag.touched[this.props.name];
-            const values = this.context.bag.values[this.props.name];
-            const newTouched = Object.assign({}, touched, { [name]: true });
-            return this.updateBag(values, newTouched, !!this.props.validateOnBlur);
-        };
-    }
-    setFieldValue(name, value, shouldValidate) {
-        const newValues = Object.assign({}, this.context.bag.values[this.props.name], { [name]: value });
-        return this.updateBag(newValues, this.context.bag.touched[this.props.name], shouldValidate);
-    }
-    setFieldTouched(name) {
-        const newTouched = Object.assign({}, this.context.bag.touched[this.props.name], { [name]: true });
-        return this.updateBag(this.context.bag.values[this.props.name], newTouched, false);
-    }
-    render() {
-        const { handleBlur, handleChange, setFieldValue, setFieldTouched, updateBag } = this;
-        const ctx = {
-            bag: {
-                valid: true,
-                errors: this.context.bag.errors[this.props.name] || {},
-                touched: this.context.bag.touched[this.props.name] || {},
-                values: this.context.bag.values[this.props.name] || {},
-            },
-            handleBlur: handleBlur,
-            handleChange: handleChange,
-            setFieldValue,
-            setFieldTouched,
-            updateBag,
-        };
-        return React.createElement(FormContext.Provider, { value: ctx }, this.props.children);
-    }
-}
-SubForm.defaultProps = {
-    validateOnChange: true,
-    validateOnBlur: true,
-};
-SubForm.contextType = FormContext;
 export class FieldError extends React.Component {
     render() {
         const _a = this.props, { component, hideIfEmpty, name } = _a, props = __rest(_a, ["component", "hideIfEmpty", "name"]);
@@ -167,6 +147,11 @@ export class Field extends React.Component {
             this.context.handleBlur(this.props.name);
         };
     }
+    componentDidMount() {
+        if (!this.context) {
+            throw new Error('<Field> is not contained within a <FormData> component');
+        }
+    }
     extractValue(target) {
         const { type } = this.props;
         if (type === 'checkbox' || type === 'radio') {
@@ -176,12 +161,17 @@ export class Field extends React.Component {
     }
     renderProps(name, children) {
         return {
-            value: this.context.bag.values[name],
-            change: (value) => this.context.handleChange(this.props.name, value),
+            // {{{
+            // FIXME: these don't need to be created on every render, they only depend on 'name':
             blur: () => this.context.handleBlur(this.props.name),
-            setFieldValue: this.context.setFieldValue,
-            setFieldTouched: this.context.setFieldTouched,
+            change: (value) => this.context.handleChange(this.props.name, value),
+            changeBag: (value, options) => this.context.handleChangeBag(this.props.name, value, options),
+            packBag: (initial) => this.context.packBag(this.props.name, initial),
+            // }}}
             children,
+            setFieldTouched: this.context.setFieldTouched,
+            setFieldValue: this.context.setFieldValue,
+            value: this.context.bag.values[name],
         };
     }
     render() {

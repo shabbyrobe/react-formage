@@ -2,7 +2,7 @@ import * as React from 'react';
 declare type FormContextDef<T = any> = FormActions<T> & {
     readonly bag: FormBag<T>;
     readonly validate?: FormValidator<T>;
-    updateBag(values: T, touched: FormTouched<T>, shouldValidate: boolean): FormBag<T>;
+    updateBag(values: T, touched: FormTouched<T>, options?: FieldUpdateOptions): FormBag<T>;
 };
 export declare type FormUpdateEvent<TValues> = {
     readonly bag: FormBag<TValues>;
@@ -26,43 +26,37 @@ export declare function createFormBag<TValues>(values: TValues, options?: {
 export declare function validateFormBag<TValues>(bag: FormBag<TValues>, validator: FormValidator<TValues>): FormBag<TValues>;
 export declare type FormValidator<TValues> = (values: TValues) => FormErrors<TValues>;
 declare type FormProps<TValues> = {
+    readonly bag: FormBag<TValues>;
     readonly onUpdate: (e: FormUpdateEvent<TValues>) => void;
     readonly validate?: FormValidator<TValues>;
-    readonly bag: FormBag<TValues>;
     readonly validateOnChange?: boolean;
     readonly validateOnBlur?: boolean;
 };
 interface FormActions<TValues> {
-    setFieldValue(name: keyof TValues, value: any, shouldValidate: boolean): FormBag<TValues>;
-    setFieldTouched(name: keyof TValues): FormBag<TValues>;
-    handleChange: (name: keyof TValues, value: any) => void;
     handleBlur: (name: keyof TValues) => void;
+    handleChange: (name: keyof TValues, value: any) => void;
+    handleChangeBag: (name: keyof TValues, value: any, options?: FieldUpdateOptions) => void;
+    packBag: (name: keyof TValues, initialValue: any) => FormBag<any>;
+    setFieldTouched(name: keyof TValues): FormBag<TValues>;
+    setFieldValue(name: keyof TValues, value: any, options?: FieldUpdateOptions): FormBag<TValues>;
 }
+export declare type FieldUpdateOptions = {
+    readonly shouldValidate?: boolean;
+};
 /** FormData provides a context to one or more Field components, validates the
  *  field values and propagates updates to the parent component. */
 export declare class FormData<TValues extends object> extends React.Component<FormProps<TValues>> {
-    static defaultProps: Partial<FormProps<any>>;
-    updateBag: (values: TValues, touched: FormTouched<TValues, keyof TValues>, shouldValidate: boolean) => FormBag<TValues>;
-    private setFieldValue;
-    private setFieldTouched;
+    static defaultProps: {
+        validateOnChange: boolean;
+        validateOnBlur: boolean;
+    };
+    updateBag: (values: TValues, touched: FormTouched<TValues, keyof TValues>, options?: FieldUpdateOptions | undefined) => FormBag<TValues>;
+    private handleChangeBag;
     private handleChange;
     private handleBlur;
-    render(): JSX.Element;
-}
-declare type SubFormProps<TParentValues, TKey> = {
-    readonly name: TKey;
-    readonly validateOnChange?: boolean;
-    readonly validateOnBlur?: boolean;
-};
-export declare class SubForm<TParentValues = any, TKey extends keyof TParentValues = any, TValues extends TParentValues[TKey] = TParentValues[TKey]> extends React.Component<SubFormProps<TParentValues, TKey>> {
-    static defaultProps: Partial<SubFormProps<any, any>>;
-    static contextType: React.Context<FormContextDef>;
-    context: FormContextDef<TParentValues>;
-    updateBag: (values: TValues, touched: FormTouched<TValues, keyof TValues>, shouldValidate: boolean) => FormBag<TValues>;
+    private packBag;
     private setFieldValue;
     private setFieldTouched;
-    private handleChange;
-    private handleBlur;
     render(): JSX.Element;
 }
 export declare type FieldErrorComponentProps<TValues> = React.PropsWithChildren<{
@@ -96,7 +90,7 @@ declare type Styleable = {
     /** 'style' is ignored if 'component' is used */
     readonly style?: React.CSSProperties;
 };
-declare type FieldBaseProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> = FieldRenderProps<TValues, TValue> & {
+declare type FieldBaseProps<TValues, TKey extends keyof TValues, TValue extends NonNullable<TValues[TKey]>> = FieldRenderProps<TValues, TValue> & {
     readonly name: TKey;
     /** If component is set to 'input', 'type' is used for the input type, i.e.
      *  'checkbox', 'radio', etc. */
@@ -108,29 +102,34 @@ declare type FieldRenderProps<TValues, TValue> = {
     readonly component?: 'input' | 'textarea' | 'select';
     readonly disabled?: boolean;
 };
-declare type FieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> = Styleable & FieldBaseProps<TValues, TKey, TValue>;
+declare type FieldProps<TValues, TKey extends keyof TValues, TValue extends NonNullable<TValues[TKey]>> = Styleable & FieldBaseProps<TValues, TKey, TValue>;
 export declare type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
     readonly value: TValue;
     readonly change: (value: TValue) => void;
+    readonly changeBag: (value: FormBag<TValue>, options?: FieldUpdateOptions) => void;
+    readonly packBag: (initialValue: TValue) => FormBag<TValue>;
     readonly blur: () => void;
-    readonly setFieldValue: (name: keyof TValues, value: TValue, shouldValidate: boolean) => FormBag<TValues>;
+    readonly setFieldValue: (name: keyof TValues, value: TValue, options?: FieldUpdateOptions) => FormBag<TValues>;
     readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
-export declare class Field<TValues = any, TKey extends keyof TValues = any, TValue extends TValues[TKey] = TValues[TKey]> extends React.Component<FieldProps<TValues, TKey, TValue>> {
+export declare class Field<TValues = any, TKey extends keyof TValues = any, TValue extends NonNullable<TValues[TKey]> = NonNullable<TValues[TKey]>> extends React.Component<FieldProps<TValues, TKey, TValue>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
-    static defaultProps: Partial<FieldProps<any, any, any>>;
+    static defaultProps: {
+        component: string;
+    };
+    componentDidMount(): void;
     private onChange;
     private onBlur;
     private extractValue;
     private renderProps;
     render(): React.ReactNode;
 }
-export declare type LabelledFieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> = Styleable & FieldBaseProps<TValues, TKey, TValue> & React.PropsWithChildren<{
+export declare type LabelledFieldProps<TValues, TKey extends keyof TValues, TValue extends NonNullable<TValues[TKey]>> = Styleable & FieldBaseProps<TValues, TKey, TValue> & React.PropsWithChildren<{
     readonly label: string;
     readonly errorComponent?: React.ComponentType<FieldErrorComponentProps<TValues>>;
     readonly hideErrorIfEmpty?: boolean;
     readonly errorClassName?: string;
 }>;
-export declare function LabelledField<TValues = any, TKey extends keyof TValues = any, TValue extends TValues[TKey] = TValues[TKey]>(props: LabelledFieldProps<TValues, TKey, TValue>): JSX.Element;
+export declare function LabelledField<TValues = any, TKey extends keyof TValues = any, TValue extends NonNullable<TValues[TKey]> = NonNullable<TValues[TKey]>>(props: LabelledFieldProps<TValues, TKey, TValue>): JSX.Element;
 export {};
