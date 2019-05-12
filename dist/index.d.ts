@@ -1,9 +1,4 @@
 import * as React from 'react';
-declare type FormContextDef<T = any> = FormActions<T> & {
-    readonly bag: FormBag<T>;
-    readonly validate?: FormValidator<T>;
-    updateBag(values: T, touched: FormTouched<T>, options?: FieldUpdateOptions): FormBag<T>;
-};
 export declare type FormUpdateEvent<TValues> = {
     readonly bag: FormBag<TValues>;
     readonly name: keyof TValues;
@@ -32,17 +27,27 @@ declare type FormProps<TValues> = {
     readonly validateOnChange?: boolean;
     readonly validateOnBlur?: boolean;
 };
-interface FormActions<TValues> {
-    handleBlur: (name: keyof TValues) => void;
-    handleChange: (name: keyof TValues, value: any) => void;
-    handleChangeBag: (name: keyof TValues, value: any, options?: FieldUpdateOptions) => void;
-    packBag: (name: keyof TValues, initialValue: any) => FormBag<any>;
-    setFieldTouched(name: keyof TValues): FormBag<TValues>;
-    setFieldValue(name: keyof TValues, value: any, options?: FieldUpdateOptions): FormBag<TValues>;
-}
 export declare type FieldUpdateOptions = {
     readonly shouldValidate?: boolean;
 };
+declare class FormContextDef<TValues = any> {
+    private _bag;
+    private validate?;
+    private onUpdate;
+    private options;
+    constructor(bag: FormBag<TValues>, onUpdate: (e: FormUpdateEvent<TValues>) => void, validate: FormValidator<TValues> | undefined, options: {
+        validateOnChange?: boolean;
+        validateOnBlur?: boolean;
+    });
+    readonly bag: FormBag<TValues>;
+    updateBag: (values: TValues, touched: FormTouched<TValues, keyof TValues>, options?: FieldUpdateOptions | undefined) => FormBag<TValues>;
+    handleChangeBag(name: keyof TValues, childBag: FormBag<TValues[typeof name]>, options?: FieldUpdateOptions): FormBag<TValues>;
+    handleChange(name: keyof TValues, value: any): void;
+    handleBlur(name: keyof TValues): FormBag<TValues>;
+    packBag(name: keyof TValues, initialValue: TValues[typeof name]): FormBag<NonNullable<TValues[typeof name]>>;
+    setFieldValue(name: keyof TValues, value: any, options?: FieldUpdateOptions): FormBag<TValues>;
+    setFieldTouched(name: keyof TValues): FormBag<TValues>;
+}
 /** FormData provides a context to one or more Field components, validates the
  *  field values and propagates updates to the parent component. */
 export declare class FormData<TValues extends object> extends React.Component<FormProps<TValues>> {
@@ -50,13 +55,6 @@ export declare class FormData<TValues extends object> extends React.Component<Fo
         validateOnChange: boolean;
         validateOnBlur: boolean;
     };
-    updateBag: (values: TValues, touched: FormTouched<TValues, keyof TValues>, options?: FieldUpdateOptions | undefined) => FormBag<TValues>;
-    private handleChangeBag;
-    private handleChange;
-    private handleBlur;
-    private packBag;
-    private setFieldValue;
-    private setFieldTouched;
     render(): JSX.Element;
 }
 export declare type FieldErrorComponentProps<TValues> = React.PropsWithChildren<{
@@ -118,7 +116,6 @@ export declare class Field<TValues = any, TKey extends keyof TValues = any, TVal
     static defaultProps: {
         component: string;
     };
-    componentDidMount(): void;
     private onChange;
     private onBlur;
     private extractValue;

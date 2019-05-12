@@ -30,86 +30,83 @@ export function validateFormBag(bag, validator) {
     };
 }
 const optionsNoValidate = { shouldValidate: false };
-/** FormData provides a context to one or more Field components, validates the
- *  field values and propagates updates to the parent component. */
-export class FormData extends React.Component {
-    constructor() {
-        super(...arguments);
+class FormContextDef {
+    constructor(bag, onUpdate, validate, options) {
         this.updateBag = (values, touched, options) => {
-            const { bag } = this.props;
+            const bag = this._bag;
             const shouldValidate = options ? !!options.shouldValidate : false;
             let errors = bag.errors;
             let valid = bag.valid;
-            if (shouldValidate && this.props.validate) {
-                errors = this.props.validate(values);
+            if (shouldValidate && this.validate) {
+                errors = this.validate(values);
                 valid = Object.keys(errors).length === 0;
             }
-            const updated = { errors, touched, valid, values };
-            this.props.onUpdate({ name, bag: updated });
-            return updated;
+            this._bag = { errors, touched, valid, values };
+            this.onUpdate({ name, bag: this._bag });
+            return this._bag;
         };
-        this.handleChangeBag = (name, childBag, options) => {
-            const { bag } = this.props;
-            const shouldValidate = (options && options.shouldValidate) || true;
-            const values = Object.assign({}, bag.values, { [name]: childBag.values });
-            const touched = Object.assign({}, bag.touched, { [name]: childBag.touched });
-            let valid = bag.valid && childBag.valid;
-            let errors = Object.assign({}, bag.errors, { [name]: childBag.errors });
-            if (shouldValidate && this.props.validate) {
-                errors = this.props.validate(values);
-                valid = Object.keys(errors).length === 0;
-            }
-            const updated = { errors, touched, valid, values };
-            this.props.onUpdate({ name, bag: updated });
-            return updated;
+        this._bag = bag;
+        this.validate = validate;
+        this.onUpdate = onUpdate;
+        this.options = options;
+    }
+    get bag() { return this._bag; }
+    handleChangeBag(name, childBag, options) {
+        const bag = this._bag;
+        const shouldValidate = (options && options.shouldValidate) || true;
+        const values = Object.assign({}, bag.values, { [name]: childBag.values });
+        const touched = Object.assign({}, bag.touched, { [name]: childBag.touched });
+        let valid = bag.valid && childBag.valid;
+        let errors = Object.assign({}, bag.errors, { [name]: childBag.errors });
+        if (shouldValidate && this.validate) {
+            errors = this.validate(values);
+            valid = Object.keys(errors).length === 0;
+        }
+        this._bag = { errors, touched, valid, values };
+        this.onUpdate({ name, bag: this._bag });
+        return this._bag;
+    }
+    handleChange(name, value) {
+        this.setFieldValue(name, value, { shouldValidate: !!this.options.validateOnChange });
+    }
+    handleBlur(name) {
+        const bag = this._bag;
+        const { touched, values } = bag;
+        const newTouched = Object.assign({}, touched, { [name]: true });
+        return this.updateBag(values, newTouched, { shouldValidate: !!this.options.validateOnBlur });
+    }
+    packBag(name, initialValue) {
+        const bag = this._bag;
+        const childBag = {
+            errors: bag.errors[name] || {},
+            touched: bag.touched[name] || {},
+            values: bag.values[name] || initialValue,
+            // FIXME: valid may need to be removed from bag; there are too many corner cases
+            // around initial value
+            valid: bag.valid,
         };
-        this.handleChange = (name, value) => {
-            this.setFieldValue(name, value, { shouldValidate: !!this.props.validateOnChange });
-        };
-        this.handleBlur = (name) => {
-            const { bag } = this.props;
-            const { touched, values } = this.props.bag;
-            const newTouched = Object.assign({}, touched, { [name]: true });
-            return this.updateBag(values, newTouched, { shouldValidate: !!this.props.validateOnBlur });
-        };
-        this.packBag = (name, initialValue) => {
-            const { bag } = this.props;
-            const childBag = {
-                errors: bag.errors[name] || {},
-                touched: bag.touched[name] || {},
-                values: bag.values[name] || initialValue,
-                // FIXME: valid may need to be removed from bag; there are too many corner cases
-                // around initial value
-                valid: bag.valid,
-            };
-            return childBag;
-        };
+        return childBag;
     }
     setFieldValue(name, value, options) {
-        const { bag } = this.props;
+        const bag = this._bag;
         const newValues = Object.assign({}, bag.values, { [name]: value });
         return this.updateBag(newValues, bag.touched, options);
     }
     setFieldTouched(name) {
-        const { bag } = this.props;
+        const bag = this._bag;
         const newTouched = Object.assign({}, bag.touched, { [name]: true });
         return this.updateBag(bag.values, newTouched, optionsNoValidate);
     }
+}
+;
+/** FormData provides a context to one or more Field components, validates the
+ *  field values and propagates updates to the parent component. */
+export class FormData extends React.Component {
     render() {
         if (!this.props.bag) {
             throw new Error('Missing bag prop in <FormData> component');
         }
-        const ctx = {
-            bag: this.props.bag,
-            handleBlur: this.handleBlur,
-            handleChange: this.handleChange,
-            handleChangeBag: this.handleChangeBag,
-            packBag: this.packBag,
-            setFieldTouched: this.setFieldTouched,
-            setFieldValue: this.setFieldValue,
-            updateBag: this.updateBag,
-            validate: this.props.validate,
-        };
+        const ctx = new FormContextDef(this.props.bag, this.props.onUpdate, this.props.validate, this.props);
         return React.createElement(FormContext.Provider, { value: ctx }, this.props.children);
     }
 }
@@ -119,6 +116,12 @@ FormData.defaultProps = {
 };
 export class FieldError extends React.Component {
     render() {
+        if (!this.context) {
+            throw new Error('<Field> is not contained within a <FormData> component');
+        }
+        if (!this.context.bag) {
+            throw new Error('<FormData> bag prop not set');
+        }
         const _a = this.props, { component, hideIfEmpty, name } = _a, props = __rest(_a, ["component", "hideIfEmpty", "name"]);
         const touched = !!this.context.bag.touched[name];
         const message = (touched && this.context.bag.errors[name]) || '';
@@ -147,11 +150,6 @@ export class Field extends React.Component {
             this.context.handleBlur(this.props.name);
         };
     }
-    componentDidMount() {
-        if (!this.context) {
-            throw new Error('<Field> is not contained within a <FormData> component');
-        }
-    }
     extractValue(target) {
         const { type } = this.props;
         if (type === 'checkbox' || type === 'radio') {
@@ -176,6 +174,12 @@ export class Field extends React.Component {
     }
     render() {
         const { name, children } = this.props;
+        if (!this.context) {
+            throw new Error('<Field> is not contained within a <FormData> component');
+        }
+        if (!this.context.bag) {
+            throw new Error('<FormData> bag prop not set');
+        }
         if ('render' in this.props) {
             const renderProps = this.renderProps(name, children);
             return this.props.render(renderProps);
