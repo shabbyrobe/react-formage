@@ -247,9 +247,10 @@ type Styleable = {
 
 // FieldBaseProps is needed so we can derive without styling.
 //
-// XXX: NonNullable is required as TypeScript 3.4 is unable to infer that TValues[TKey]
-// will never be undefined if TKey is valid.
-type FieldBaseProps<TValues, TKey extends keyof TValues, TValue extends NonNullable<TValues[TKey]>> =
+// XXX: TypeScript 3.4 is unable to infer that TValues[TKey] will never be undefined if
+// TKey is valid. NonNullable doesn't help as it strips any explicitly declared undefined
+// or null types from the property.
+type FieldBaseProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> =
   FieldRenderProps<TValues, TValue> &
   {
     readonly name: TKey;
@@ -267,16 +268,20 @@ type FieldRenderProps<TValues, TValue> =
   }
 ;
 
-type FieldProps<TValues, TKey extends keyof TValues, TValue extends NonNullable<TValues[TKey]>> =
+type FieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> =
   Styleable & FieldBaseProps<TValues, TKey, TValue>;
 
 export type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
   readonly value: TValue;
   readonly change: (value: TValue) => void;
   readonly changeBag: (value: FormBag<TValue>, options?: FieldUpdateOptions) => void;
-  readonly packBag: (initialValue: TValue) => FormBag<TValue>;
+
+  // XXX: TypeScript 3.4 infers a bogus 'undefined' for TValue here even when there is
+  // none. This is a problem when TValue is exposed as a return type.
+  readonly packBag: (initialValue: TValue) => FormBag<NonNullable<TValue>>;
+
   readonly blur: () => void;
-  readonly setFieldValue: (name: keyof TValues, value: TValue, options?: FieldUpdateOptions) => FormBag<TValues>;
+  readonly setFieldValue: (name: keyof TValues, value: TValues[typeof name], options?: FieldUpdateOptions) => FormBag<TValues>;
   readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
 
@@ -284,7 +289,7 @@ export type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
 export class Field<
   TValues=any,
   TKey extends keyof TValues=any,
-  TValue extends NonNullable<TValues[TKey]> = NonNullable<TValues[TKey]>,
+  TValue extends TValues[TKey] = TValues[TKey],
 >
   extends React.Component<FieldProps<TValues, TKey, TValue>> {
 
@@ -369,7 +374,7 @@ export class Field<
 export type LabelledFieldProps<
   TValues,
   TKey extends keyof TValues,
-  TValue extends NonNullable<TValues[TKey]>,
+  TValue extends TValues[TKey],
 > = Styleable & FieldBaseProps<TValues, TKey, TValue> & React.PropsWithChildren<{
 
   readonly label: string;
@@ -381,7 +386,7 @@ export type LabelledFieldProps<
 export function LabelledField<
   TValues = any,
   TKey extends keyof TValues = any,
-  TValue extends NonNullable<TValues[TKey]> = NonNullable<TValues[TKey]>,
+  TValue extends TValues[TKey] = TValues[TKey],
 >(props: LabelledFieldProps<TValues, TKey, TValue>) {
 
   const { errorClassName, errorComponent, hideErrorIfEmpty, label, ...rest } = props;
