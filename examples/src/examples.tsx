@@ -6,6 +6,7 @@ import { LotsaInputsExample } from './lotsa-inputs';
 import { LotsaInputsFormikExample } from './lotsa-inputs-formik';
 import { NestedReuseExample } from './nested-reuse';
 import { NestedSubformExample } from './nested-subform';
+import { MultiUpdateExample } from './multi-update';
 import { ReactSelectExample } from './react-select';
 
 const Container = (props: React.PropsWithChildren<{}>) => (
@@ -59,6 +60,7 @@ type Example = {
 
 const examples: ReadonlyArray<Example> = [
   { url: 'basic-input'         , name: 'Basic Input Types'     , component: () => <BasicExample /> }             ,
+  { url: 'multi-update'        , name: 'Multi Update'          , component: () => <MultiUpdateExample /> }       ,
   { url: 'react-select'        , name: 'React Select'          , component: () => <ReactSelectExample /> }       ,
   { url: 'async-validation'    , name: 'Async Validation'      , component: () => <AsyncValidationExample /> }   ,
   { url: 'nested-reuse'        , name: 'Nested Reuse'          , component: () => <NestedReuseExample /> }       ,

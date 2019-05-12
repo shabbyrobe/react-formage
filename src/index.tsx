@@ -164,13 +164,13 @@ class FormContextDef<TValues=any> {
     return childBag;
   }
 
-  public setFieldValue(name: keyof TValues, value: any, options?: FieldUpdateOptions): FormBag<TValues> {
+  public setFieldValue = (name: keyof TValues, value: any, options?: FieldUpdateOptions): FormBag<TValues> => {
     const bag = this._bag;
     const newValues = { ...bag.values, [name]: value };
     return this.updateBag(newValues, bag.touched, options);
   }
 
-  public setFieldTouched(name: keyof TValues): FormBag<TValues> {
+  public setFieldTouched = (name: keyof TValues): FormBag<TValues> => {
     const bag = this._bag;
     const newTouched = { ...bag.touched, [name]: true };
     return this.updateBag(bag.values, newTouched, optionsNoValidate);

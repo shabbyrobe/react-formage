@@ -44,9 +44,11 @@ const Level2Form = () => <>
   <LabelledField<Level2Values> label="Baz" name="baz" errorClassName="error" />
   <LabelledField<Level2Values> label="Qux" name="qux" errorClassName="error" />
   <Field<Level2Values, "level3"> name="level3" render={(props) => (
-    <FormData<Level3Values> bag={props.packBag({ yep: '' })} onUpdate={(e) => props.changeBag(e.bag) }>
-      <Level3Form />
-    </FormData>
+    <div style={{border: '1px solid purple', padding: '10px'}}>
+      <FormData<Level3Values> bag={props.packBag({ yep: '' })} onUpdate={(e) => props.changeBag(e.bag) }>
+        <Level3Form />
+      </FormData>
+    </div>
   )} />
 </>;
 
@@ -76,9 +78,11 @@ const Level1Form = () => <>
   <LabelledField<Level1Values> label="Bar" name="bar" errorClassName="error" />
 
   <Field<Level1Values, "level2"> name="level2" render={(props) => (
-    <FormData<Level2Values> bag={props.packBag(initialLevel2)} onUpdate={(e) => props.changeBag(e.bag)}>
-      <Level2Form />
-    </FormData>
+    <div style={{border: '1px solid blue', padding: '10px'}}>
+      <FormData<Level2Values> bag={props.packBag(initialLevel2)} onUpdate={(e) => props.changeBag(e.bag)}>
+        <Level2Form />
+      </FormData>
+    </div>
   )} />
 </>;
 
@@ -114,9 +118,13 @@ export class NestedReuseExample extends React.Component<Props, State> {
   public render() {
     return (
       <form noValidate onSubmit={this.onSubmit}>
-        <FormData bag={this.state.bag} onUpdate={this.onUpdate} validate={validateLevel1}>
-          <Level1Form />
-        </FormData>
+        <h1>Nested Reusable Form Components</h1>
+
+        <div style={{border: '1px solid green', padding: '10px'}}>
+          <FormData bag={this.state.bag} onUpdate={this.onUpdate} validate={validateLevel1}>
+            <Level1Form />
+          </FormData>
+        </div>
 
         <button onClick={this.onSubmit}>SUBMIT</button>
 

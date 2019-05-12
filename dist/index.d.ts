@@ -45,8 +45,8 @@ declare class FormContextDef<TValues = any> {
     handleChange(name: keyof TValues, value: any): void;
     handleBlur(name: keyof TValues): FormBag<TValues>;
     packBag(name: keyof TValues, initialValue: TValues[typeof name]): FormBag<NonNullable<TValues[typeof name]>>;
-    setFieldValue(name: keyof TValues, value: any, options?: FieldUpdateOptions): FormBag<TValues>;
-    setFieldTouched(name: keyof TValues): FormBag<TValues>;
+    setFieldValue: (name: keyof TValues, value: any, options?: FieldUpdateOptions | undefined) => FormBag<TValues>;
+    setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }
 /** FormData provides a context to one or more Field components, validates the
  *  field values and propagates updates to the parent component. */

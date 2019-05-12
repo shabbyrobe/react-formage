@@ -45,6 +45,16 @@ class FormContextDef {
             this.onUpdate({ name, bag: this._bag });
             return this._bag;
         };
+        this.setFieldValue = (name, value, options) => {
+            const bag = this._bag;
+            const newValues = Object.assign({}, bag.values, { [name]: value });
+            return this.updateBag(newValues, bag.touched, options);
+        };
+        this.setFieldTouched = (name) => {
+            const bag = this._bag;
+            const newTouched = Object.assign({}, bag.touched, { [name]: true });
+            return this.updateBag(bag.values, newTouched, optionsNoValidate);
+        };
         this._bag = bag;
         this.validate = validate;
         this.onUpdate = onUpdate;
@@ -86,16 +96,6 @@ class FormContextDef {
             valid: bag.valid,
         };
         return childBag;
-    }
-    setFieldValue(name, value, options) {
-        const bag = this._bag;
-        const newValues = Object.assign({}, bag.values, { [name]: value });
-        return this.updateBag(newValues, bag.touched, options);
-    }
-    setFieldTouched(name) {
-        const bag = this._bag;
-        const newTouched = Object.assign({}, bag.touched, { [name]: true });
-        return this.updateBag(bag.values, newTouched, optionsNoValidate);
     }
 }
 ;
