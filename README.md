@@ -152,3 +152,15 @@ export class BasicExample extends React.Component<{}, State> {
   }
 }
 ```
+
+
+Credits
+-------
+
+This project is the distillation of a particular pattern for taming Formik in a
+complex form configuration. Without the aid of significant contributions made
+by others, this would not have been possible at all:
+
+- Jack Rose (@jay-aye-see-kay)
+- Daniel Carr (@ddouglascarr)
+
