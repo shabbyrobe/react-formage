@@ -1,7 +1,18 @@
 import * as React from 'react';
 
 import * as formage from 'react-formage';
-import { Field, FormData, LabelledField } from 'react-formage';
+import { Field, FieldError, FormData } from 'react-formage';
+
+function LabelledField<TValues, TKey extends keyof TValues>(props: { label: string } & formage.FieldProps<TValues, TKey>) {
+  const { label, ...rest } = props;
+  return (
+    <div>
+      <label>{props.label}</label>
+      <Field<TValues, TKey> {...rest} />
+      <FieldError<TValues> name={props.name} className='error' />
+    </div>
+  );
+}
 
 type Level3Values = {
   readonly yep: string;
@@ -16,7 +27,7 @@ const validateLevel3 = (values: Level3Values): formage.FormErrors<Level3Values> 
 };
 
 const Level3Form = () => <>
-  <LabelledField<Level3Values> label="Yep" name="yep" errorClassName="error" />
+  <LabelledField<Level3Values, 'yep'> label='Yep' name='yep' />
 </>;
 
 
@@ -41,9 +52,9 @@ const validateLevel2 = (values: Level2Values): formage.FormErrors<Level2Values> 
 };
 
 const Level2Form = () => <>
-  <LabelledField<Level2Values> label="Baz" name="baz" errorClassName="error" />
-  <LabelledField<Level2Values> label="Qux" name="qux" errorClassName="error" />
-  <Field<Level2Values, "level3"> name="level3" render={(props) => (
+  <LabelledField<Level2Values, 'baz'> label='Baz' name='baz' />
+  <LabelledField<Level2Values, 'qux'> label='Qux' name='qux' />
+  <Field<Level2Values, 'level3'> name='level3' render={(props) => (
     <div style={{border: '1px solid purple', padding: '10px'}}>
       <FormData<Level3Values> bag={props.packBag({ yep: '' })} onUpdate={(e) => props.changeBag(e.bag) }>
         <Level3Form />
@@ -74,10 +85,10 @@ const initialLevel1: Level1Values = {
 };
 
 const Level1Form = () => <>
-  <LabelledField<Level1Values> label="Foo" name="foo" errorClassName="error" />
-  <LabelledField<Level1Values> label="Bar" name="bar" errorClassName="error" />
+  <LabelledField<Level1Values, 'foo'> label='Foo' name='foo' />
+  <LabelledField<Level1Values, 'bar'> label='Bar' name='bar' />
 
-  <Field<Level1Values, "level2"> name="level2" render={(props) => (
+  <Field<Level1Values, 'level2'> name='level2' render={(props) => (
     <div style={{border: '1px solid blue', padding: '10px'}}>
       <FormData<Level2Values> bag={props.packBag(initialLevel2)} onUpdate={(e) => props.changeBag(e.bag)}>
         <Level2Form />

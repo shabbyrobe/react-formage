@@ -100,7 +100,7 @@ declare type FieldRenderProps<TValues, TValue> = {
     readonly component?: 'input' | 'textarea' | 'select';
     readonly disabled?: boolean;
 };
-declare type FieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> = Styleable & FieldBaseProps<TValues, TKey, TValue>;
+export declare type FieldProps<TValues = any, TKey extends keyof TValues = any, TValue extends TValues[TKey] = TValues[TKey]> = React.PropsWithChildren<Styleable & FieldBaseProps<TValues, TKey, TValue>>;
 export declare type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
     readonly value: TValue;
     readonly change: (value: TValue) => void;
@@ -122,11 +122,4 @@ export declare class Field<TValues = any, TKey extends keyof TValues = any, TVal
     private renderProps;
     render(): React.ReactNode;
 }
-export declare type LabelledFieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> = Styleable & FieldBaseProps<TValues, TKey, TValue> & React.PropsWithChildren<{
-    readonly label: string;
-    readonly errorComponent?: React.ComponentType<FieldErrorComponentProps<TValues>>;
-    readonly hideErrorIfEmpty?: boolean;
-    readonly errorClassName?: string;
-}>;
-export declare function LabelledField<TValues = any, TKey extends keyof TValues = any, TValue extends TValues[TKey] = TValues[TKey]>(props: LabelledFieldProps<TValues, TKey, TValue>): JSX.Element;
 export {};

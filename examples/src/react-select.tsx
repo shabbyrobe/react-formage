@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Select from 'react-select';
 
-import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, LabelledField, validateFormBag } from 'react-formage';
+import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
 
 type Props = {};
 
@@ -66,10 +66,9 @@ export class ReactSelectExample extends React.Component<Props, State> {
           <h1>React Select Examples</h1>
 
           <div>
-            <LabelledField<Values, 'withInitialEmpty'>
-              label='Initially empty'
+            <label>Initially empty</label>
+            <Field<Values, 'withInitialEmpty'>
               name='withInitialEmpty'
-              errorClassName="error"
               render={(props) => (
                 <Select 
                   options={reactSelectOptions}
@@ -79,13 +78,13 @@ export class ReactSelectExample extends React.Component<Props, State> {
                 />
               )}
             />
+            <FieldError<Values> name='withInitialEmpty' />
           </div>
 
           <div>
-            <LabelledField<Values, 'withInitialInvalid'>
-              label='Initially invalid'
+            <label>Initially invalid</label>
+            <Field<Values, 'withInitialInvalid'>
               name='withInitialInvalid'
-              errorClassName="error"
               render={(props) => (
                 <Select 
                   options={reactSelectOptions}
@@ -95,13 +94,13 @@ export class ReactSelectExample extends React.Component<Props, State> {
                 />
               )}
             />
+            <FieldError<Values> name='withInitialInvalid' />
           </div>
 
           <div>
-            <LabelledField<Values, 'withInitialValid'>
-              label='Initially valid'
+            <label>Initially valid</label>
+            <Field<Values, 'withInitialValid'>
               name='withInitialValid'
-              errorClassName="error"
               render={(props) => (
                 <Select 
                   options={reactSelectOptions}
@@ -111,6 +110,7 @@ export class ReactSelectExample extends React.Component<Props, State> {
                 />
               )}
             />
+            <FieldError<Values> name='withInitialValid' />
           </div>
 
           <button onClick={this.onSubmit}>SUBMIT</button>

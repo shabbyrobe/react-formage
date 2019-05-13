@@ -56,15 +56,23 @@ export class MultiUpdateExample extends React.Component<Props, State> {
             Multiple fields can be updated simultaneously when a field is changed
             using <code>props.setFieldValue(name, value)</code> in your Field's <code>render()</code>
           </p>
-          
-          <formage.LabelledField<Values, 'foo1'> label='Foo 1' name='foo1' render={(props) => (
-            <input type="text" value={props.value} onBlur={props.blur} onChange={(e) => {
-              props.change(e.target.value);
-              props.setFieldValue('foo2', e.target.value + ' yep');
-            }} />
-          )} />
 
-          <formage.LabelledField<Values, 'foo2'> label='Foo 2' name='foo2' />
+          <div>
+            <label>Foo 1</label>
+            <formage.Field<Values, 'foo1'> name='foo1' render={(props) => (
+              <input type="text" value={props.value} onBlur={props.blur} onChange={(e) => {
+                props.change(e.target.value);
+                props.setFieldValue('foo2', e.target.value + ' yep');
+              }} />
+            )} />
+            <formage.FieldError<Values> name='foo1' className='error' />
+          </div>
+
+          <div>
+            <label>Foo 2</label>
+            <formage.Field<Values, 'foo2'> name='foo2' />
+            <formage.FieldError<Values> name='foo2' className='error' />
+          </div>
 
           {/* This used to set 'disabled={!this.state.bag.valid}', but that prevents 
               submit from triggering validation of untouched fields */}

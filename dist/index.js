@@ -202,13 +202,6 @@ Field.contextType = FormContext;
 Field.defaultProps = {
     component: 'input',
 };
-export function LabelledField(props) {
-    const { errorClassName, errorComponent, hideErrorIfEmpty, label } = props, rest = __rest(props, ["errorClassName", "errorComponent", "hideErrorIfEmpty", "label"]);
-    return (React.createElement("div", { className: props.className, style: props.style },
-        React.createElement("label", null, label),
-        React.createElement(Field, Object.assign({}, rest)),
-        React.createElement(FieldError, { name: props.name, className: errorClassName, component: errorComponent, hideIfEmpty: hideErrorIfEmpty })));
-}
 function touchAll(errors, touched) {
     if (!touched) {
         touched = {};

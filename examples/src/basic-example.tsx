@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Select from 'react-select';
 
-import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, LabelledField, validateFormBag } from 'react-formage';
+import { createFormBag, Field, FieldError, FieldProps, FormBag, FormData, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
 
 type Props = {};
 
@@ -87,11 +87,14 @@ export class BasicExample extends React.Component<Props, State> {
             <div className='error'>{touched.bar && errors.bar}</div>
           </div>
 
-          {/* But we can simplify further: */}
-          <LabelledField<Values, 'email'> label='Email' name='email' errorClassName='error' />
+          <div>
+            <label>Email</label>
+            <Field<Values, 'email'> name='email' />
+            <FieldError<Values> name='email' className='error' />
+          </div>
 
           <div>
-            <label>Multi-Line with textarea</label>
+            <label>Multiline</label>
             <Field<Values, 'multiline'> name='multiline' component='textarea' />
             <FieldError<Values> name='multiline' className='error' />
           </div>
@@ -102,13 +105,21 @@ export class BasicExample extends React.Component<Props, State> {
             <FieldError<Values> name='check' className='error' />
           </div>
 
-          <LabelledField<Values, 'normalSelect'> name='normalSelect' label='Normal Select' component='select' errorClassName='error'>
-            <option>one</option>
-            <option>two</option>
-            <option>three</option>
-          </LabelledField>
+          <div>
+            <label>Normal Select</label>
+            <Field<Values, 'normalSelect'> name='normalSelect' component='select'>
+              <option>one</option>
+              <option>two</option>
+              <option>three</option>
+            </Field>
+            <FieldError<Values> name='normalSelect' className='error' />
+          </div>
 
-          <LabelledField<Values, 'foo'> label='Foo again for some reason' name='foo' errorClassName='error' />
+          <div>
+            <label>Foo again for some reason</label>
+            <Field<Values, 'foo'> name='foo' />
+            <FieldError<Values> name='foo' className='error' />
+          </div>
 
           {/* This used to set 'disabled={!this.state.bag.valid}', but that prevents 
               submit from triggering validation of untouched fields */}

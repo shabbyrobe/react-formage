@@ -282,8 +282,11 @@ type FieldRenderProps<TValues, TValue> =
   }
 ;
 
-type FieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> =
-  Styleable & FieldBaseProps<TValues, TKey, TValue>;
+export type FieldProps<
+  TValues = any,
+  TKey extends keyof TValues = any,
+  TValue extends TValues[TKey] = TValues[TKey],
+> = React.PropsWithChildren<Styleable & FieldBaseProps<TValues, TKey, TValue>>;
 
 export type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
   readonly value: TValue;
@@ -301,8 +304,8 @@ export type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
 
 
 export class Field<
-  TValues=any,
-  TKey extends keyof TValues=any,
+  TValues = any,
+  TKey extends keyof TValues = any,
   TValue extends TValues[TKey] = TValues[TKey],
 >
   extends React.Component<FieldProps<TValues, TKey, TValue>> {
@@ -385,40 +388,6 @@ export class Field<
   }
 }
 
-
-export type LabelledFieldProps<
-  TValues,
-  TKey extends keyof TValues,
-  TValue extends TValues[TKey],
-> = Styleable & FieldBaseProps<TValues, TKey, TValue> & React.PropsWithChildren<{
-
-  readonly label: string;
-  readonly errorComponent?: React.ComponentType<FieldErrorComponentProps<TValues>>;
-  readonly hideErrorIfEmpty?: boolean;
-  readonly errorClassName?: string;
-}>;
-
-export function LabelledField<
-  TValues = any,
-  TKey extends keyof TValues = any,
-  TValue extends TValues[TKey] = TValues[TKey],
->(props: LabelledFieldProps<TValues, TKey, TValue>) {
-
-  const { errorClassName, errorComponent, hideErrorIfEmpty, label, ...rest } = props;
-
-  return (
-    <div className={props.className} style={props.style}>
-      <label>{label}</label>
-      <Field<TValues, TKey, TValue> {...rest} />
-      <FieldError<TValues>
-        name={props.name}
-        className={errorClassName}
-        component={errorComponent}
-        hideIfEmpty={hideErrorIfEmpty}
-      />
-    </div>
-  );
-}
 
 function touchAll(errors: any, touched: any): any {
   if (!touched) {

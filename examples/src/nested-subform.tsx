@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, LabelledField, validateFormBag } from 'react-formage';
+import { createFormBag, Field, FieldError, FieldProps, FormBag, FormData, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
 
 type Props = {};
 
@@ -23,6 +23,17 @@ type Values = {
 type State = {
   readonly bag: FormBag<Values>;
 };
+
+function LabelledField<TValues, TKey extends keyof TValues>(props: { label: string } & FieldProps<TValues, TKey>) {
+  const { label, ...rest } = props;
+  return (
+    <div>
+      <label>{props.label}</label>
+      <Field<TValues, TKey> {...rest} />
+      <FieldError<TValues> name={props.name} className='error' />
+    </div>
+  );
+}
 
 export class NestedSubformExample extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -75,13 +86,12 @@ export class NestedSubformExample extends React.Component<Props, State> {
         <FormData bag={this.state.bag} onUpdate={this.onFormUpdate} validate={this.validate}>
           <h1>Nested Subform</h1>
 
-          <LabelledField<Values, 'foo'> label='Foo' name='foo' errorClassName='error' />
-          <LabelledField<Values, 'bar'> label='Bar' name='bar' errorClassName='error' />
+          <LabelledField<Values, 'foo'> label='Foo' name='foo' />
+          <LabelledField<Values, 'bar'> label='Bar' name='bar' />
 
           <LabelledField<Values, 'objField'>
             label="ObjField"
             name="objField"
-            errorClassName="error"
             render={(props) => (
               <input value={props.value.value} onBlur={props.blur}
                 onChange={(e) => props.change({ value: e.target.value })}
@@ -92,8 +102,8 @@ export class NestedSubformExample extends React.Component<Props, State> {
           <label>Child Values</label>
           <Field<Values, "childValues"> name="childValues" render={(props) => (
             <FormData<ChildValues> bag={props.packBag({ baz: '', qux: '' })} onUpdate={(e) => props.changeBag(e.bag)}>
-              <LabelledField<ChildValues, 'baz'> label='Baz' name='baz' errorClassName='error' />
-              <LabelledField<ChildValues, 'qux'> label='Qux' name='qux' errorClassName='error' />
+              <LabelledField<ChildValues, 'baz'> label='Baz' name='baz' />
+              <LabelledField<ChildValues, 'qux'> label='Qux' name='qux' />
             </FormData>
           )} />
 

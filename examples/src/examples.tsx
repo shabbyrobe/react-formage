@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { AsyncValidationExample } from './async-validation';
 import { BasicExample } from './basic-example';
+import { FieldLayoutExample } from './field-layout';
 import { LotsaInputsExample } from './lotsa-inputs';
 import { LotsaInputsFormikExample } from './lotsa-inputs-formik';
 import { NestedReuseExample } from './nested-reuse';
@@ -60,6 +61,7 @@ type Example = {
 
 const examples: ReadonlyArray<Example> = [
   { url: 'basic-input'         , name: 'Basic Input Types'     , component: () => <BasicExample /> }             ,
+  { url: 'field-layout'        , name: 'Field Layout'          , component: () => <FieldLayoutExample /> }             ,
   { url: 'multi-update'        , name: 'Multi Update'          , component: () => <MultiUpdateExample /> }       ,
   { url: 'react-select'        , name: 'React Select'          , component: () => <ReactSelectExample /> }       ,
   { url: 'async-validation'    , name: 'Async Validation'      , component: () => <AsyncValidationExample /> }   ,
