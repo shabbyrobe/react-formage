@@ -65,8 +65,8 @@ const examples: ReadonlyArray<Example> = [
   { url: 'multi-update'        , name: 'Multi Update'          , component: () => <MultiUpdateExample /> }       ,
   { url: 'react-select'        , name: 'React Select'          , component: () => <ReactSelectExample /> }       ,
   { url: 'async-validation'    , name: 'Async Validation'      , component: () => <AsyncValidationExample /> }   ,
-  { url: 'nested-reuse'        , name: 'Nested Reuse'          , component: () => <NestedReuseExample /> }       ,
   { url: 'nested-subform'      , name: 'Nested Subform'        , component: () => <NestedSubformExample /> }      ,
+  { url: 'nested-reuse'        , name: 'Nested Reuse'          , component: () => <NestedReuseExample /> }       ,
   { url: 'lotsa-inputs'        , name: 'Lotsa Inputs'          , component: () => <LotsaInputsExample /> }       ,
   { url: 'lotsa-inputs-formik' , name: 'Lotsa Inputs (Formik)' , component: () => <LotsaInputsFormikExample /> } ,
 ];
