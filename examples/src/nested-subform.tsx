@@ -90,8 +90,8 @@ export class NestedSubformExample extends React.Component<Props, State> {
           <LabelledField<Values, 'bar'> label='Bar' name='bar' />
 
           <LabelledField<Values, 'objField'>
-            label="ObjField"
-            name="objField"
+            label='ObjField'
+            name='objField'
             render={(props) => (
               <input value={props.value.value} onBlur={props.blur}
                 onChange={(e) => props.change({ value: e.target.value })}
@@ -100,7 +100,7 @@ export class NestedSubformExample extends React.Component<Props, State> {
           />
 
           <label>Child Values</label>
-          <Field<Values, "childValues"> name="childValues" render={(props) => (
+          <Field<Values, 'childValues'> name='childValues' render={(props) => (
             <FormData<ChildValues> bag={props.packBag({ baz: '', qux: '' })} onUpdate={(e) => props.changeBag(e.bag)}>
               <LabelledField<ChildValues, 'baz'> label='Baz' name='baz' />
               <LabelledField<ChildValues, 'qux'> label='Qux' name='qux' />

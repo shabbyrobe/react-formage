@@ -27,7 +27,7 @@ export class LotsaInputsFormikExample extends React.Component<Props, State> {
   private onSubmit = async (values: Values, formikActions: FormikActions<Values>) => {
     const errors = await formikActions.validateForm(values);
     if (!errors) {
-      alert("Submit OK!");
+      alert('Submit OK!');
     }
     return;
   };
@@ -55,7 +55,7 @@ export class LotsaInputsFormikExample extends React.Component<Props, State> {
 
             <div>
               <label>Use Fast Field?</label>
-              <input type="checkbox" checked={this.state.fastField} onChange={(e) => {
+              <input type='checkbox' checked={this.state.fastField} onChange={(e) => {
                 this.setState({ fastField: e.currentTarget.checked });
               }} />
             </div>
@@ -73,7 +73,7 @@ export class LotsaInputsFormikExample extends React.Component<Props, State> {
 
             <hr />
             
-            <button type="submit">Submit</button>
+            <button type='submit'>Submit</button>
 
             {Array.from({length: this.state.inputs}, (x,i) => (
               <div key={i}>
@@ -86,7 +86,7 @@ export class LotsaInputsFormikExample extends React.Component<Props, State> {
               </div>
             ))}
 
-            <button type="submit">Submit</button>
+            <button type='submit'>Submit</button>
           </Form>
         )}
       />

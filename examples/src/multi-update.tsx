@@ -60,7 +60,7 @@ export class MultiUpdateExample extends React.Component<Props, State> {
           <div>
             <label>Foo 1</label>
             <formage.Field<Values, 'foo1'> name='foo1' render={(props) => (
-              <input type="text" value={props.value} onBlur={props.blur} onChange={(e) => {
+              <input type='text' value={props.value} onBlur={props.blur} onChange={(e) => {
                 props.change(e.target.value);
                 props.setFieldValue('foo2', e.target.value + ' yep');
               }} />

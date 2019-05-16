@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+// We set no default here - FormContext is not exported, and all our uses in here are
+// guaranteed to set one.
 const FormContext = React.createContext<FormContextDef>(null as any);
 const FormConsumer = FormContext.Consumer;
 
@@ -138,7 +140,7 @@ class FormContextDef<TValues=any> {
     return this._bag;
   }
 
-  public handleChange(name: keyof TValues, value: any) {
+  public handleChange(name: keyof TValues, value: TValues[typeof name]) {
     this.setFieldValue(name, value, { shouldValidate: !!this.options.validateOnChange });
   }
 
@@ -220,7 +222,7 @@ type FieldErrorProps<TValues> = Styleable & {
   readonly hideIfEmpty?: boolean;
 };
 
-export class FieldError<TValues=any> extends React.Component<FieldErrorProps<TValues>> {
+export class FieldError<TValues> extends React.Component<FieldErrorProps<TValues>> {
   public static contextType: React.Context<FormContextDef> = FormContext;
   public context!: FormContextDef<TValues>;
 
@@ -283,8 +285,8 @@ type FieldRenderProps<TValues, TValue> =
 ;
 
 export type FieldProps<
-  TValues = any,
-  TKey extends keyof TValues = any,
+  TValues,
+  TKey extends keyof TValues,
   TValue extends TValues[TKey] = TValues[TKey],
 > = React.PropsWithChildren<Styleable & FieldBaseProps<TValues, TKey, TValue>>;
 
@@ -304,8 +306,8 @@ export type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
 
 
 export class Field<
-  TValues = any,
-  TKey extends keyof TValues = any,
+  TValues,
+  TKey extends keyof TValues = keyof TValues,
   TValue extends TValues[TKey] = TValues[TKey],
 >
   extends React.Component<FieldProps<TValues, TKey, TValue>> {
@@ -317,11 +319,11 @@ export class Field<
     component: 'input',
   };
 
-  private onChange = (e: any) => {
+  private onComponentChange = (e: any) => {
     this.context.handleChange(this.props.name, this.extractValue(e.target));
   };
 
-  private onBlur = (e: any) => {
+  private onComponentBlur = (e: any) => {
     this.context.handleBlur(this.props.name);
   };
 
@@ -371,8 +373,8 @@ export class Field<
     
     const componentProps: any = {
       ...this.props,
-      onChange: this.onChange,
-      onBlur: this.onBlur,
+      onChange: this.onComponentChange,
+      onBlur: this.onComponentBlur,
 
       // Without the '', if the key does not exist, react warns about
       // uncontrolled components:
@@ -389,7 +391,7 @@ export class Field<
 }
 
 
-function touchAll(errors: any, touched: any): any {
+function touchAll(errors: FormErrors<any>, touched: FormTouched<any>): FormTouched<any> {
   if (!touched) {
     touched = {};
   }
@@ -397,18 +399,18 @@ function touchAll(errors: any, touched: any): any {
     if (typeof errors[key] === 'string') {
       touched[key] = true;
     } else {
-      touched[key] = touchAll(errors[key], touched[key]);
+      touched[key] = touchAll(errors[key] as any, touched[key] as any);
     }
   }
   return touched;
 }
 
-function isValid(errors: any): boolean {
+function isValid(errors: FormErrors<any, any>): boolean {
   for (const key of Object.keys(errors)) {
-    if (typeof (errors as any)[key] === 'string') {
+    if (typeof errors[key] === 'string') {
       return false;
     } else {
-      if (!isValid(errors[key])) {
+      if (!isValid(errors[key] as any)) {
         return false;
       }
     }

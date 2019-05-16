@@ -112,20 +112,20 @@ export class AsyncValidationExample extends React.Component<Props, State> {
 
           <div>
             <label>Slow field validation speed (ms)</label>
-            <Field<Values> name="slowSpeedMs" />
-            <FieldError<Values> name="slowSpeedMs" className="error" />
+            <Field<Values, 'slowSpeedMs'> name='slowSpeedMs' />
+            <FieldError<Values> name='slowSpeedMs' className='error' />
           </div>
 
           <div>
             <label>Fast</label>
-            <Field<Values> name="fast" />
-            <FieldError<Values> name="fast" className="error" />
+            <Field<Values, 'fast'> name='fast' />
+            <FieldError<Values> name='fast' className='error' />
           </div>
 
           <div>
             <label>Slow</label>
-            <Field<Values> name="slow" />
-            <div className="error">{touched.slow && errors.slow}</div>
+            <Field<Values, 'slow'> name='slow' />
+            <div className='error'>{touched.slow && errors.slow}</div>
             {this.state.slowIsValidating ? 'Loading... ' + this.state.slowValidationCnt : null}
           </div>
 

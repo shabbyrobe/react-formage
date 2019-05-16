@@ -42,7 +42,7 @@ declare class FormContextDef<TValues = any> {
     readonly bag: FormBag<TValues>;
     updateBag: (values: TValues, touched: FormTouched<TValues, keyof TValues>, options?: FieldUpdateOptions | undefined) => FormBag<TValues>;
     handleChangeBag(name: keyof TValues, childBag: FormBag<TValues[typeof name]>, options?: FieldUpdateOptions): FormBag<TValues>;
-    handleChange(name: keyof TValues, value: any): void;
+    handleChange(name: keyof TValues, value: TValues[typeof name]): void;
     handleBlur(name: keyof TValues): FormBag<TValues>;
     packBag(name: keyof TValues, initialValue: TValues[typeof name]): FormBag<NonNullable<TValues[typeof name]>>;
     setFieldValue: (name: keyof TValues, value: any, options?: FieldUpdateOptions | undefined) => FormBag<TValues>;
@@ -70,7 +70,7 @@ declare type FieldErrorProps<TValues> = Styleable & {
       * if you don't want an element in the DOM even if there is no message. */
     readonly hideIfEmpty?: boolean;
 };
-export declare class FieldError<TValues = any> extends React.Component<FieldErrorProps<TValues>> {
+export declare class FieldError<TValues> extends React.Component<FieldErrorProps<TValues>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
     render(): React.ReactElement<React.PropsWithChildren<{
@@ -100,7 +100,7 @@ declare type FieldRenderProps<TValues, TValue> = {
     readonly component?: 'input' | 'textarea' | 'select';
     readonly disabled?: boolean;
 };
-export declare type FieldProps<TValues = any, TKey extends keyof TValues = any, TValue extends TValues[TKey] = TValues[TKey]> = React.PropsWithChildren<Styleable & FieldBaseProps<TValues, TKey, TValue>>;
+export declare type FieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey] = TValues[TKey]> = React.PropsWithChildren<Styleable & FieldBaseProps<TValues, TKey, TValue>>;
 export declare type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
     readonly value: TValue;
     readonly change: (value: TValue) => void;
@@ -110,14 +110,14 @@ export declare type FieldComponentProps<TValues, TValue> = React.PropsWithChildr
     readonly setFieldValue: (name: keyof TValues, value: TValues[typeof name], options?: FieldUpdateOptions) => FormBag<TValues>;
     readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
-export declare class Field<TValues = any, TKey extends keyof TValues = any, TValue extends TValues[TKey] = TValues[TKey]> extends React.Component<FieldProps<TValues, TKey, TValue>> {
+export declare class Field<TValues, TKey extends keyof TValues = keyof TValues, TValue extends TValues[TKey] = TValues[TKey]> extends React.Component<FieldProps<TValues, TKey, TValue>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
     static defaultProps: {
         component: string;
     };
-    private onChange;
-    private onBlur;
+    private onComponentChange;
+    private onComponentBlur;
     private extractValue;
     private renderProps;
     render(): React.ReactNode;

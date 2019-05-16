@@ -8,6 +8,8 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 import * as React from 'react';
+// We set no default here - FormContext is not exported, and all our uses in here are
+// guaranteed to set one.
 const FormContext = React.createContext(null);
 const FormConsumer = FormContext.Consumer;
 export function createFormBag(values, options) {
@@ -143,10 +145,10 @@ FieldError.contextType = FormContext;
 export class Field extends React.Component {
     constructor() {
         super(...arguments);
-        this.onChange = (e) => {
+        this.onComponentChange = (e) => {
             this.context.handleChange(this.props.name, this.extractValue(e.target));
         };
-        this.onBlur = (e) => {
+        this.onComponentBlur = (e) => {
             this.context.handleBlur(this.props.name);
         };
     }
@@ -187,7 +189,7 @@ export class Field extends React.Component {
         if (!('component' in this.props)) {
             throw new Error('formage: must include render or component prop');
         }
-        const componentProps = Object.assign({}, this.props, { onChange: this.onChange, onBlur: this.onBlur, 
+        const componentProps = Object.assign({}, this.props, { onChange: this.onComponentChange, onBlur: this.onComponentBlur, 
             // Without the '', if the key does not exist, react warns about
             // uncontrolled components:
             value: this.context.bag.values[name] || '' });
