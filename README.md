@@ -91,7 +91,7 @@ they're serviceable. Run `npm run localdemo` to run them in a local web server.
 ```typescript
 import * as React from 'react';
 
-import { createFormBag, FormBag, FormData, FormErrors, LabelledField, validateFormBag } from 'react-formage';
+import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, validateFormBag } from 'react-formage';
 
 type Values = {
   readonly foo: string;
@@ -142,8 +142,17 @@ export class BasicExample extends React.Component<{}, State> {
     return (
       <form noValidate onSubmit={this.onSubmit}>
         <FormData bag={this.state.bag} onUpdate={(e) => this.setState({ bag: e.bag })} validate={this.validate}>
-          <LabelledField<Values, "foo"> name="foo" errorClassName="error" />
-          <LabelledField<Values, "bar"> name="bar" errorClassName="error" />
+          <div>
+            <label>Foo</label>
+            <Field<Values, "foo"> name="foo" />
+            <FieldError<Values> name="foo" className="error" />
+          </div>
+  
+          <div>
+            <label>Bar</label>
+            <Field<Values, "bar"> name="bar" />
+            <FieldError<Values> name="bar" className="error" />
+          </div>
 
           <button onClick={this.onSubmit}>Submit</button>
         </FormData>
