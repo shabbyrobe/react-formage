@@ -1,29 +1,56 @@
-const webpack = require('webpack');
+const webpack = require("webpack");
+const path = require("path");
+
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const mode = process.env.NODE_ENV || "development";
+
+const lp = (...p) => path.join(path.resolve(__dirname), ...p);
 
 module.exports = {
   entry: "./src/index.tsx",
   output: {
-    filename: "bundle.js",
-    path: __dirname + "/dist"
+    filename: "[name].[contenthash].js",
+    path: lp("build"),
+    publicPath: "/",
+  },
+
+  optimization: {
+    splitChunks: {
+      chunks: "all",
+    },
+  },
+
+  devServer: {
+    contentBase: lp("build"),
+    compress: true,
+    port: 9002,
+    historyApiFallback: true,
   },
 
   watchOptions: {
-    ignored: /node_modules/
+    ignored: /node_modules/,
+    poll: true,
   },
 
   mode: mode,
   devtool: mode === "development" ? "inline-source-map" : "",
 
   resolve: {
-    // Add '.ts' and '.tsx' as resolvable extensions.
-    extensions: [".ts", ".tsx", ".js", ".json"]
+    modules: [
+      lp("node_modules"),
+      lp("src"),
+    ],
+    extensions: [".ts", ".tsx", ".js", ".json"],
   },
 
   plugins: [
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(mode),
+      "process.env.NODE_ENV": JSON.stringify(mode),
+    }),
+    new HtmlWebpackPlugin({
+      inject: true,
+      template: "public/index.html",
     }),
   ],
 
@@ -33,13 +60,4 @@ module.exports = {
       { enforce: "pre", test: /\.js$/, loader: "source-map-loader" }
     ]
   },
-
-  // When importing a module whose path matches one of the following, just
-  // assume a corresponding global variable exists and use that instead.
-  // This is important because it allows us to avoid bundling all of our
-  // dependencies, which allows browsers to cache those libraries between builds.
-  externals: {
-    "react": "React",
-    "react-dom": "ReactDOM"
-  }
 };

@@ -1,11 +1,16 @@
 import * as React from 'react';
 
-import { BasicExample } from './basic-example';
-import { LotsaInputsExample } from './lotsa-inputs';
 import { AsyncValidationExample } from './async-validation';
+import { BasicExample } from './basic-example';
+import { FieldLayoutExample } from './field-layout';
+import { LotsaInputsExample } from './lotsa-inputs';
 import { LotsaInputsFormikExample } from './lotsa-inputs-formik';
+import { NestedReuseExample } from './nested-reuse';
+import { NestedSubformExample } from './nested-subform';
+import { MultiUpdateExample } from './multi-update';
+import { ReactSelectExample } from './react-select';
 
-const Container = (props: any) => (
+const Container = (props: React.PropsWithChildren<{}>) => (
   <div style={{
     padding: '8px',
     boxSizing: 'border-box',
@@ -19,13 +24,22 @@ const Container = (props: any) => (
   </div>
 );
 
-const Nav = (props: any) => (
+const Nav = (props: React.PropsWithChildren<{}>) => (
   <ul style={{ gridColumn: 'nav' }}>
     {props.children}
   </ul>
 );
 
-const Body = (props: any) => {
+const NavLink = (props: any) => (
+  <a style={{
+    ...(props.style || {}),
+    display: 'block',
+    margin: '10px',
+    borderBottom: '1px dotted #ccc',
+    }} {...props} />
+);
+
+const Body = (props: React.PropsWithChildren<{}>) => {
   return (
     <div style={{ gridColumn: 'body' }}>
       {props.children}
@@ -40,21 +54,30 @@ type State = {
 };
 
 type Example = {
-  id: string;
-  component: () => React.ReactNode;
+  readonly url: string;
+  readonly name: string;
+  readonly component: () => React.ReactNode;
 };
 
 const examples: ReadonlyArray<Example> = [
-  { id: 'Control Types', component: () => <BasicExample /> },
-  { id: 'Lotsa Inputs', component: () => <LotsaInputsExample /> },
-  { id: 'Async Validation', component: () => <AsyncValidationExample /> },
-  { id: 'Lotsa Inputs (Formik)', component: () => <LotsaInputsFormikExample /> },
+  { url: 'basic-input'         , name: 'Basic Input Types'     , component: () => <BasicExample /> }             ,
+  { url: 'field-layout'        , name: 'Field Layout'          , component: () => <FieldLayoutExample /> }             ,
+  { url: 'multi-update'        , name: 'Multi Update'          , component: () => <MultiUpdateExample /> }       ,
+  { url: 'react-select'        , name: 'React Select'          , component: () => <ReactSelectExample /> }       ,
+  { url: 'async-validation'    , name: 'Async Validation'      , component: () => <AsyncValidationExample /> }   ,
+  { url: 'nested-subform'      , name: 'Nested Subform'        , component: () => <NestedSubformExample /> }      ,
+  { url: 'nested-reuse'        , name: 'Nested Reuse'          , component: () => <NestedReuseExample /> }       ,
+  { url: 'lotsa-inputs'        , name: 'Lotsa Inputs'          , component: () => <LotsaInputsExample /> }       ,
+  { url: 'lotsa-inputs-formik' , name: 'Lotsa Inputs (Formik)' , component: () => <LotsaInputsFormikExample /> } ,
 ];
 
 export class Examples extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { current: examples[0] };
+    const path = window.location.pathname.replace(/(^\/|\/$)/, '');
+    this.state = {
+      current: examples.find((v) => v.url === path) || examples[0],
+    };
   }
 
   public render() {
@@ -62,7 +85,13 @@ export class Examples extends React.Component<Props, State> {
       <Container>
         <Nav>
           {examples.map((v) => (
-            <li key={v.id}><a onClick={() => this.setState({ current: v })}>{v.id}</a></li>
+            <li key={v.url}>
+              <NavLink
+                onClick={() => {
+                  window.history.pushState({}, '', v.url);
+                  this.setState({ current: v });
+                }}>{v.name}</NavLink>
+            </li>
           ))}
         </Nav>
         

@@ -8,15 +8,18 @@ type Props = {};
 type Values = {
   readonly fast: string;
   readonly slow: string;
+  readonly slowSpeedMs: string;
 };
 
 type State = {
   readonly bag: FormBag<Values>;
   readonly slowIsValidating?: boolean;
   readonly slowLastValidated?: string;
+  readonly slowSpeedMs: number;
+  readonly slowValidationCnt: number;
 };
 
-function bagSetError<TValues>(bag: FormBag<TValues>, field: keyof TValues, error: string | undefined): FormBag<TValues> {
+function bagSetError<TValues>(bag: FormBag<TValues>, field: keyof TValues, error: any): FormBag<TValues> {
   const errors = { ...bag.errors };
   if (error) {
     errors[field] = error;
@@ -31,9 +34,12 @@ export class AsyncValidationExample extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      slowSpeedMs: 2000,
+      slowValidationCnt: 0,
       bag: createFormBag({
         fast: '',
         slow: '',
+        slowSpeedMs: 2000+'',
       }),
     };
   }
@@ -61,19 +67,39 @@ export class AsyncValidationExample extends React.Component<Props, State> {
       delete(errors.fast);
     }
 
-    if (!this.state.slowIsValidating && values.slow !== this.state.slowLastValidated) {
+    if (isNaN(parseInt(values.slowSpeedMs)) || parseInt(values.slowSpeedMs) < 0) {
+      errors.slowSpeedMs = 'invalid speed';
+    } else {
+      this.setState({ slowSpeedMs: parseInt(values.slowSpeedMs) });
+    }
+
+    if (values.slow !== this.state.slowLastValidated) {
       delete(errors.slow);
-      this.setState({ slowIsValidating: true, slowLastValidated: values.slow });
+      this.setState({
+        slowIsValidating: true, 
+        slowValidationCnt: this.state.slowValidationCnt + 1,
+        slowLastValidated: values.slow,
+      });
       this.validateSlow(values.slow);
     }
+
     return errors;
   };
 
+  private timeout: any;
+
   private async validateSlow(v: string) {
-    setTimeout(() => {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
+
+    this.timeout = setTimeout(() => {
       const bag = bagSetError(this.state.bag, 'slow', !v ? 'Required' : undefined);
-      this.setState({ slowIsValidating: false, bag });
-    }, 1000);
+      this.setState({
+        slowIsValidating: false,
+        bag,
+      });
+    }, this.state.slowSpeedMs);
   }
 
   public render() {
@@ -82,19 +108,25 @@ export class AsyncValidationExample extends React.Component<Props, State> {
     return (
       <form noValidate onSubmit={this.onSubmit}>
         <FormData bag={this.state.bag} onUpdate={this.onFormUpdate} validate={this.validate}>
-          <h1>Form Example</h1>
+          <h1>Async Validation</h1>
+
+          <div>
+            <label>Slow field validation speed (ms)</label>
+            <Field<Values, 'slowSpeedMs'> name='slowSpeedMs' />
+            <FieldError<Values> name='slowSpeedMs' className='error' />
+          </div>
 
           <div>
             <label>Fast</label>
-            <Field<Values> name="fast" />
-            <FieldError<Values> name="fast" className="error" />
+            <Field<Values, 'fast'> name='fast' />
+            <FieldError<Values> name='fast' className='error' />
           </div>
 
           <div>
             <label>Slow</label>
-            <Field<Values> name="slow" />
-            <div className="error">{touched.slow && errors.slow}</div>
-            {this.state.slowIsValidating ? 'Loading...' : null}
+            <Field<Values, 'slow'> name='slow' />
+            <div className='error'>{touched.slow && errors.slow}</div>
+            {this.state.slowIsValidating ? 'Loading... ' + this.state.slowValidationCnt : null}
           </div>
 
           <button onClick={this.onSubmit}>SUBMIT</button>

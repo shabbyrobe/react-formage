@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Select from 'react-select';
 
-import { createFormBag, Field, FieldError, FormBag, FormData, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
+import { createFormBag, Field, FieldError, FieldProps, FormBag, FormData, FormErrors, FormUpdateEvent, validateFormBag } from 'react-formage';
 
 type Props = {};
 
@@ -9,17 +9,14 @@ type Values = {
   readonly foo: string;
   readonly bar: string;
   readonly email: string;
-  readonly textarea: string;
+  readonly multiline: string;
   readonly check: boolean;
-  readonly reactSelect: string;
   readonly normalSelect: string;
 };
 
 type State = {
   readonly bag: FormBag<Values>;
 };
-
-const reactSelectOptions = ['a', 'b', 'c'].map((v) => ({ value: v, label: v }));
 
 export class BasicExample extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -29,9 +26,8 @@ export class BasicExample extends React.Component<Props, State> {
         foo: 'yeps',
         bar: 'yeppo',
         email: '',
-        textarea: 'yeppers',
+        multiline: 'yeppers',
         check: false,
-        reactSelect: 'pants',
         normalSelect: 'one',
       }),
     };
@@ -54,7 +50,7 @@ export class BasicExample extends React.Component<Props, State> {
   private validate = (values: Values): FormErrors<Values> => {
     const errors: FormErrors<Values> = {};
 
-    const required: Array<keyof Values> = ['bar', 'textarea', 'reactSelect'];
+    const required: Array<keyof Values> = ['bar', 'multiline'];
     for (const key of required) {
       if (!values[key]) {
         errors[key] = 'Value is required';
@@ -64,10 +60,7 @@ export class BasicExample extends React.Component<Props, State> {
       errors.email = 'Email invalid';
     }
     if (values.foo !== 'yep') {
-      errors.foo = 'Foo must be "yep"';
-    }
-    if (!reactSelectOptions.find((v) => v.value === values.reactSelect)) {
-      errors.reactSelect = 'Invalid value';
+      errors.foo = 'Foo must contain the string "yep"';
     }
     return errors;
   };
@@ -78,70 +71,58 @@ export class BasicExample extends React.Component<Props, State> {
     return (
       <form noValidate onSubmit={this.onSubmit}>
         <FormData bag={this.state.bag} onUpdate={this.onFormUpdate} validate={this.validate}>
-          <h1>Form Example</h1>
+          <h1>Basic Input Types</h1>
 
           <div>
             <label>Foo</label>
-            <Field<Values> name="foo" />
-            <FieldError<Values> name="foo" className="error" />
+            <Field<Values, 'foo'> name='foo' />
+            <FieldError<Values> name='foo' className='error' />
           </div>
 
           <div>
             <label>Bar</label>
-            <Field<Values> name="bar" />
-            <div className="error">{touched.bar && errors.bar}</div>
+            <Field<Values, 'bar'> name='bar' />
+
+            {/* <FieldError> is basically just this: */}
+            <div className='error'>{touched.bar && errors.bar}</div>
           </div>
 
           <div>
             <label>Email</label>
-            <Field<Values> name="email" />
-            <FieldError<Values> name="email" className="error" />
+            <Field<Values, 'email'> name='email' />
+            <FieldError<Values> name='email' className='error' />
           </div>
 
           <div>
-            <label>Textarea</label>
-            <Field<Values> component="textarea" name="textarea" />
-            <div className="error">{touched.textarea && errors.textarea}</div>
+            <label>Multiline</label>
+            <Field<Values, 'multiline'> name='multiline' component='textarea' />
+            <FieldError<Values> name='multiline' className='error' />
           </div>
 
           <div>
             <label>Check</label>
-            <Field<Values> type="checkbox" name="check" />
-            <div className="error">{touched.check && errors.check}</div>
-          </div>
-
-          <div>
-            <label>React Select</label>
-            <Field<Values> name="reactSelect" component={(props) => {
-              return (
-                <Select 
-                  options={reactSelectOptions}
-                  value={{ label: props.value, value: props.value }}
-                  onChange={(e) => props.change((e as any).value)}
-                  onBlur={() => props.blur()}
-                />
-              );
-            }}/>
-            <div className="error">{touched.reactSelect && errors.reactSelect}</div>
+            <Field<Values, 'check'> type='checkbox' name='check' />
+            <FieldError<Values> name='check' className='error' />
           </div>
 
           <div>
             <label>Normal Select</label>
-            <Field<Values> component="select" name="normalSelect">
+            <Field<Values, 'normalSelect'> name='normalSelect' component='select'>
               <option>one</option>
               <option>two</option>
               <option>three</option>
             </Field>
-            <FieldError<Values> name="normalSelect" className="error" />
+            <FieldError<Values> name='normalSelect' className='error' />
           </div>
 
           <div>
             <label>Foo again for some reason</label>
-            <Field<Values> name="foo" />
-            <div className="error">{touched.foo && errors.foo}</div>
+            <Field<Values, 'foo'> name='foo' />
+            <FieldError<Values> name='foo' className='error' />
           </div>
 
-          {/* This used to set 'disabled={!this.state.bag.valid}', but that prevents submit from triggering validation of untouched fields */}
+          {/* This used to set 'disabled={!this.state.bag.valid}', but that prevents 
+              submit from triggering validation of untouched fields */}
           <button onClick={this.onSubmit}>SUBMIT</button>
 
           <div style={{ margin: '30px 0px' }}>

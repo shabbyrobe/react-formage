@@ -72,7 +72,7 @@ export class LotsaInputsExample extends React.Component<Props, State> {
             <div key={i}>
               <label>{`field${i}`}</label>
               <Field<Values> name={`field${i}`} />
-              <FieldError<Values> name={`field${i}`} className="error" />
+              <FieldError<Values> name={`field${i}`} className='error' />
             </div>
           ))}
 
