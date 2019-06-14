@@ -266,7 +266,7 @@ type Styleable = {
 // XXX: TypeScript 3.4 is unable to infer that TValues[TKey] will never be undefined if
 // TKey is valid. NonNullable doesn't help as it strips any explicitly declared undefined
 // or null types from the property.
-type FieldBaseProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> =
+type FieldBaseProps<TValues, TKey extends keyof TValues, TValue> =
   FieldRenderProps<TValues, TValue> &
   {
     readonly name: TKey;
@@ -287,7 +287,7 @@ type FieldRenderProps<TValues, TValue> =
 export type FieldProps<
   TValues,
   TKey extends keyof TValues,
-  TValue extends TValues[TKey] = TValues[TKey],
+  TValue = TValues[TKey],
 > = React.PropsWithChildren<Styleable & FieldBaseProps<TValues, TKey, TValue>>;
 
 export type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
@@ -308,7 +308,7 @@ export type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
 export class Field<
   TValues,
   TKey extends keyof TValues = keyof TValues,
-  TValue extends TValues[TKey] = TValues[TKey],
+  TValue = TValues[TKey],
 >
   extends React.Component<FieldProps<TValues, TKey, TValue>> {
 

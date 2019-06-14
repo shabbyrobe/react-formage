@@ -88,7 +88,7 @@ declare type Styleable = {
     /** 'style' is ignored if 'component' is used */
     readonly style?: React.CSSProperties;
 };
-declare type FieldBaseProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey]> = FieldRenderProps<TValues, TValue> & {
+declare type FieldBaseProps<TValues, TKey extends keyof TValues, TValue> = FieldRenderProps<TValues, TValue> & {
     readonly name: TKey;
     /** If component is set to 'input', 'type' is used for the input type, i.e.
      *  'checkbox', 'radio', etc. */
@@ -100,7 +100,7 @@ declare type FieldRenderProps<TValues, TValue> = {
     readonly component?: 'input' | 'textarea' | 'select';
     readonly disabled?: boolean;
 };
-export declare type FieldProps<TValues, TKey extends keyof TValues, TValue extends TValues[TKey] = TValues[TKey]> = React.PropsWithChildren<Styleable & FieldBaseProps<TValues, TKey, TValue>>;
+export declare type FieldProps<TValues, TKey extends keyof TValues, TValue = TValues[TKey]> = React.PropsWithChildren<Styleable & FieldBaseProps<TValues, TKey, TValue>>;
 export declare type FieldComponentProps<TValues, TValue> = React.PropsWithChildren<{
     readonly value: TValue;
     readonly change: (value: TValue) => void;
@@ -110,7 +110,7 @@ export declare type FieldComponentProps<TValues, TValue> = React.PropsWithChildr
     readonly setFieldValue: (name: keyof TValues, value: TValues[typeof name], options?: FieldUpdateOptions) => FormBag<TValues>;
     readonly setFieldTouched: (name: keyof TValues) => FormBag<TValues>;
 }>;
-export declare class Field<TValues, TKey extends keyof TValues = keyof TValues, TValue extends TValues[TKey] = TValues[TKey]> extends React.Component<FieldProps<TValues, TKey, TValue>> {
+export declare class Field<TValues, TKey extends keyof TValues = keyof TValues, TValue = TValues[TKey]> extends React.Component<FieldProps<TValues, TKey, TValue>> {
     static contextType: React.Context<FormContextDef>;
     context: FormContextDef<TValues>;
     static defaultProps: {
