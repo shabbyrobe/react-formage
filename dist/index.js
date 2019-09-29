@@ -51,12 +51,12 @@ class FormContextDef {
         };
         this.setFieldValue = (name, value, options) => {
             const bag = this._bag;
-            const newValues = Object.assign({}, bag.values, { [name]: value });
+            const newValues = Object.assign(Object.assign({}, bag.values), { [name]: value });
             return this.updateBag(newValues, bag.touched, options);
         };
         this.setFieldTouched = (name) => {
             const bag = this._bag;
-            const newTouched = Object.assign({}, bag.touched, { [name]: true });
+            const newTouched = Object.assign(Object.assign({}, bag.touched), { [name]: true });
             return this.updateBag(bag.values, newTouched, optionsNoValidate);
         };
         this._bag = bag;
@@ -68,10 +68,10 @@ class FormContextDef {
     handleChangeBag(name, childBag, options) {
         const bag = this._bag;
         const shouldValidate = (options && options.shouldValidate) || true;
-        const values = Object.assign({}, bag.values, { [name]: childBag.values });
-        const touched = Object.assign({}, bag.touched, { [name]: childBag.touched });
+        const values = Object.assign(Object.assign({}, bag.values), { [name]: childBag.values });
+        const touched = Object.assign(Object.assign({}, bag.touched), { [name]: childBag.touched });
         let valid = bag.valid && childBag.valid;
-        let errors = Object.assign({}, bag.errors, { [name]: childBag.errors });
+        let errors = Object.assign(Object.assign({}, bag.errors), { [name]: childBag.errors });
         if (shouldValidate && this.validate) {
             errors = this.validate(values);
             valid = Object.keys(errors).length === 0;
@@ -86,7 +86,7 @@ class FormContextDef {
     handleBlur(name) {
         const bag = this._bag;
         const { touched, values } = bag;
-        const newTouched = Object.assign({}, touched, { [name]: true });
+        const newTouched = Object.assign(Object.assign({}, touched), { [name]: true });
         return this.updateBag(values, newTouched, { shouldValidate: !!this.options.validateOnBlur });
     }
     packBag(name, initialValue) {
@@ -191,7 +191,7 @@ export class Field extends React.Component {
         if (!('component' in this.props)) {
             throw new Error('formage: must include render or component prop');
         }
-        const componentProps = Object.assign({}, this.props, { onChange: this.onComponentChange, onBlur: this.onComponentBlur, 
+        const componentProps = Object.assign(Object.assign({}, this.props), { onChange: this.onComponentChange, onBlur: this.onComponentBlur, 
             // Without the '', if the key does not exist, react warns about
             // uncontrolled components:
             value: this.context.bag.values[name] || '' });
